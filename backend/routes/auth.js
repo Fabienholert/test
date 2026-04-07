@@ -2,14 +2,14 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 const User = require("../models/User");
-const { sendVerificationEmail } = require("../services/emailService");
+const { sendAdminApprovalEmail } = require("../services/emailService");
 const router = express.Router();
 
 const JWT_SECRET =
   process.env.JWT_SECRET || "your-secret-key-change-in-production";
 const JWT_EXPIRY = "24h";
 
-// POST - Enregistrer un nouvel utilisateur (avec vérification d'email)
+// POST - Enregistrer un nouvel utilisateur (en attente d'approbation admin)
 router.post("/register", async (req, res) => {
   try {
     const { email, password, nom, prenom } = req.body;
@@ -31,41 +31,41 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ error: "Cet email est déjà utilisé" });
     }
 
-    // Générer un token de vérification
-    const verificationToken = uuidv4();
-    const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    // Générer un token d'approbation admin
+    const adminApprovalToken = uuidv4();
+    const adminApprovalTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 jours
 
-    // Créer l'utilisateur
+    // Créer l'utilisateur (non vérifié, en attente d'approbation)
     const user = new User({
       email,
       password,
       nom,
       prenom,
       isVerified: false,
-      verificationToken,
-      verificationTokenExpires,
+      adminApprovalToken,
+      adminApprovalTokenExpires,
     });
 
     await user.save();
 
-    // Envoyer l'email de vérification
-    const emailResult = await sendVerificationEmail(
+    // Envoyer l'email d'approbation à fabienholert@gmail.com
+    const emailResult = await sendAdminApprovalEmail(
       email,
-      verificationToken,
+      nom,
       prenom,
+      adminApprovalToken,
     );
     if (!emailResult.success) {
-      // L'utilisateur est créé mais l'email n'a pas pu être envoyé
       return res.status(500).json({
         error:
-          "Compte créé mais email de vérification non envoyé. Veuillez contacter le support.",
+          "Compte créé mais email d'approbation non envoyé. Veuillez contacter le support.",
         details: emailResult.error,
       });
     }
 
     res.status(201).json({
       message:
-        "Inscription réussie ! Vérifiez votre email pour activer votre compte.",
+        "Inscription en attente ! Un email d'approbation a été envoyé à l'administrateur.",
       email: user.email,
     });
   } catch (error) {
@@ -73,14 +73,56 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// GET - Vérifier l'email avec le token
+// GET - Approuver une inscription (utilisé par l'email d'approbation)
+router.get("/approve/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const user = await User.findOne({
+      adminApprovalToken: token,
+      adminApprovalTokenExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: "Token d'approbation invalide ou expiré" });
+    }
+
+    // Marquer l'utilisateur comme vérifié
+    user.isVerified = true;
+    user.adminApprovalToken = null;
+    user.adminApprovalTokenExpires = null;
+    await user.save();
+
+    // Générer le token JWT
+    const jwtToken = jwt.sign(
+      { userId: user._id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRY },
+    );
+
+    res.json({
+      message: "Inscription approuvée avec succès !",
+      token: jwtToken,
+      user: {
+        id: user._id,
+        email: user.email,
+        nom: user.nom,
+        prenom: user.prenom,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET - Vérifier l'email avec le token (garde pour compatibilité)
 router.get("/verify-email/:token", async (req, res) => {
   try {
     const { token } = req.params;
 
     const user = await User.findOne({
-      verificationToken: token,
-      verificationTokenExpires: { $gt: Date.now() },
+      adminApprovalToken: token,
+      adminApprovalTokenExpires: { $gt: Date.now() },
     });
 
     if (!user) {
@@ -89,8 +131,8 @@ router.get("/verify-email/:token", async (req, res) => {
 
     // Marquer l'utilisateur comme vérifié
     user.isVerified = true;
-    user.verificationToken = null;
-    user.verificationTokenExpires = null;
+    user.adminApprovalToken = null;
+    user.adminApprovalTokenExpires = null;
     await user.save();
 
     // Générer le token JWT

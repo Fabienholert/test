@@ -35,6 +35,14 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  adminApprovalToken: {
+    type: String,
+    default: null,
+  },
+  adminApprovalTokenExpires: {
+    type: Date,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
