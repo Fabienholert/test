@@ -1,28 +1,23 @@
 import React, { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import SectionConformance from './components/SectionConformance'
 import SectionCapture from './components/SectionCapture'
 import SectionTracking from './components/SectionTracking'
 import LoginPage from './components/LoginPage'
+import VerifyEmailPage from './components/VerifyEmailPage'
 import { isAfter, differenceInDays, parseISO, startOfDay } from 'date-fns'
 import { dossierAPI } from './services/dossierAPI'
 
-export default function App() {
-  // ===== TOUS LES HOOKS D'ABORD =====
-  
-  // État authentification
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+function Dashboard() {
+  // États du dashboard
   const [user, setUser] = useState(null)
   const [showLogout, setShowLogout] = useState(false)
-
-  // État pour la Section A (Conformité)
   const [conformanceData, setConformanceData] = useState({
     reclamation: '',
     signature: '',
     dateEntree: '',
     dateImpression: ''
   })
-
-  // État pour la Section B (Saisie)
   const [captureData, setCaptureData] = useState({
     orNumber: '',
     dissNumber: '',
@@ -41,46 +36,19 @@ export default function App() {
     dateDiag: '',
     sortiepromise: ''
   })
-
-  // État pour la Section C (Suivi)
   const [records, setRecords] = useState([])
   const [validationMessage, setValidationMessage] = useState(null)
   const [loading, setLoading] = useState(false)
   const [stats, setStats] = useState({ total: 0, docsOK: 0, docsMissing: 0, taux: 0 })
 
-  // ===== TOUS LES USEEFFECT =====
-
-  // Vérifier l'authentification au démarrage
+  // Au chargement du dashboard, récupérer les données utilisateur
   useEffect(() => {
-    const token = localStorage.getItem('token')
     const savedUser = localStorage.getItem('user')
-    if (token && savedUser) {
-      setIsAuthenticated(true)
+    if (savedUser) {
       setUser(JSON.parse(savedUser))
-    }
-  }, [])
-
-  // Charger les dossiers quand authentifié
-  useEffect(() => {
-    if (isAuthenticated) {
       loadDossiers()
     }
-  }, [isAuthenticated])
-
-  // ===== TOUTES LES FONCTIONS =====
-
-  function handleLoginSuccess(userData) {
-    setUser(userData)
-    setIsAuthenticated(true)
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    setIsAuthenticated(false)
-    setUser(null)
-    setShowLogout(false)
-  }
+  }, [])
 
   const loadDossiers = async () => {
     setLoading(true)
@@ -100,6 +68,12 @@ export default function App() {
       docsMissing: total - docsOK,
       taux
     })
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    window.location.href = '/login'
   }
 
   const handleConformanceChange = (e) => {
@@ -269,11 +243,12 @@ export default function App() {
     setValidationMessage(null)
   }
 
-  // ===== RENDER CONDITIONNEL À LA FIN =====
-
-  // Si non authentifié, afficher la page de login
-  if (!isAuthenticated) {
-    return <LoginPage onLoginSuccess={handleLoginSuccess} />
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600">Chargement...</p>
+      </div>
+    )
   }
 
   return (
@@ -397,5 +372,28 @@ export default function App() {
         <p>Audit Garantie VW © 2024 - Système de Gestion de Réception</p>
       </footer>
     </div>
+  )
+}
+
+export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    setIsAuthenticated(!!token)
+  }, [])
+
+  const handleLoginSuccess = (userData) => {
+    setIsAuthenticated(true)
+  }
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
+      </Routes>
+    </Router>
   )
 }
