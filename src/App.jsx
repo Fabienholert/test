@@ -2,10 +2,44 @@ import React, { useState, useEffect } from 'react'
 import SectionConformance from './components/SectionConformance'
 import SectionCapture from './components/SectionCapture'
 import SectionTracking from './components/SectionTracking'
+import LoginPage from './components/LoginPage'
 import { isAfter, differenceInDays, parseISO, startOfDay } from 'date-fns'
 import { dossierAPI } from './services/dossierAPI'
 
 export default function App() {
+  // État authentification
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState(null)
+  const [showLogout, setShowLogout] = useState(false)
+
+  // Vérifier l'authentification au démarrage
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    const savedUser = localStorage.getItem('user')
+    if (token && savedUser) {
+      setIsAuthenticated(true)
+      setUser(JSON.parse(savedUser))
+    }
+  }, [])
+
+  // Si non authentifié, afficher la page de login
+  if (!isAuthenticated) {
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />
+  }
+
+  function handleLoginSuccess(userData) {
+    setUser(userData)
+    setIsAuthenticated(true)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    setIsAuthenticated(false)
+    setUser(null)
+    setShowLogout(false)
+  }
+
   // État pour la Section A (Conformité)
   const [conformanceData, setConformanceData] = useState({
     reclamation: '',
@@ -42,8 +76,10 @@ export default function App() {
 
   // Charger les dossiers au démarrage
   useEffect(() => {
-    loadDossiers()
-  }, [])
+    if (isAuthenticated) {
+      loadDossiers()
+    }
+  }, [isAuthenticated])
 
   const loadDossiers = async () => {
     setLoading(true)
@@ -238,9 +274,38 @@ export default function App() {
     <div className="min-h-screen bg-gray-50">
       {/* En-tête */}
       <header className="bg-gradient-to-r from-compliance to-orange-600 text-white py-6 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-3xl font-bold">🚗 Audit Garantie VW</h1>
-          <p className="text-orange-100 mt-2">Gestion de Réception Garantie - Système de Conformité Stricte</p>
+        <div className="max-w-7xl mx-auto px-4 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold">🚗 Audit Garantie VW</h1>
+            <p className="text-orange-100 mt-2">Gestion de Réception Garantie - Système de Conformité Stricte</p>
+          </div>
+          
+          {/* Info utilisateur et déconnexion */}
+          <div className="text-right">
+            <p className="text-orange-100 text-sm">Connecté en tant que:</p>
+            <p className="text-lg font-semibold">{user?.prenom} {user?.nom}</p>
+            <p className="text-orange-200 text-xs">{user?.email}</p>
+            
+            <div className="relative mt-2">
+              <button
+                onClick={() => setShowLogout(!showLogout)}
+                className="bg-orange-700 hover:bg-orange-800 text-white px-3 py-1 rounded text-sm transition"
+              >
+                ⚙️ Menu
+              </button>
+              
+              {showLogout && (
+                <div className="absolute right-0 mt-1 bg-white text-orange-600 rounded shadow-lg z-10">
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 hover:bg-orange-50"
+                  >
+                    🚪 Se déconnecter
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </header>
 
