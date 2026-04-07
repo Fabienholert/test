@@ -33,7 +33,9 @@ router.post("/register", async (req, res) => {
 
     // Générer un token d'approbation admin
     const adminApprovalToken = uuidv4();
-    const adminApprovalTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 jours
+    const adminApprovalTokenExpires = new Date(
+      Date.now() + 7 * 24 * 60 * 60 * 1000,
+    ); // 7 jours
 
     // Créer l'utilisateur (non vérifié, en attente d'approbation)
     const user = new User({
@@ -84,7 +86,9 @@ router.get("/approve/:token", async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ error: "Token d'approbation invalide ou expiré" });
+      return res
+        .status(400)
+        .json({ error: "Token d'approbation invalide ou expiré" });
     }
 
     // Marquer l'utilisateur comme vérifié
