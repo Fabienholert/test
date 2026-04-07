@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { dossierAPI } from '../services/dossierAPI'
 
 export default function LoginPage({ onLoginSuccess }) {
   const [email, setEmail] = useState('technicien@vw.com')

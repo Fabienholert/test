@@ -7,38 +7,12 @@ import { isAfter, differenceInDays, parseISO, startOfDay } from 'date-fns'
 import { dossierAPI } from './services/dossierAPI'
 
 export default function App() {
+  // ===== TOUS LES HOOKS D'ABORD =====
+  
   // État authentification
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState(null)
   const [showLogout, setShowLogout] = useState(false)
-
-  // Vérifier l'authentification au démarrage
-  useEffect(() => {
-    const token = localStorage.getItem('token')
-    const savedUser = localStorage.getItem('user')
-    if (token && savedUser) {
-      setIsAuthenticated(true)
-      setUser(JSON.parse(savedUser))
-    }
-  }, [])
-
-  function handleLoginSuccess(userData) {
-    setUser(userData)
-    setIsAuthenticated(true)
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    setIsAuthenticated(false)
-    setUser(null)
-    setShowLogout(false)
-  }
-
-  // Si non authentifié, afficher la page de login
-  if (!isAuthenticated) {
-    return <LoginPage onLoginSuccess={handleLoginSuccess} />
-  }
 
   // État pour la Section A (Conformité)
   const [conformanceData, setConformanceData] = useState({
@@ -74,12 +48,39 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [stats, setStats] = useState({ total: 0, docsOK: 0, docsMissing: 0, taux: 0 })
 
-  // Charger les dossiers au démarrage
+  // ===== TOUS LES USEEFFECT =====
+
+  // Vérifier l'authentification au démarrage
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    const savedUser = localStorage.getItem('user')
+    if (token && savedUser) {
+      setIsAuthenticated(true)
+      setUser(JSON.parse(savedUser))
+    }
+  }, [])
+
+  // Charger les dossiers quand authentifié
   useEffect(() => {
     if (isAuthenticated) {
       loadDossiers()
     }
   }, [isAuthenticated])
+
+  // ===== TOUTES LES FONCTIONS =====
+
+  function handleLoginSuccess(userData) {
+    setUser(userData)
+    setIsAuthenticated(true)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    setIsAuthenticated(false)
+    setUser(null)
+    setShowLogout(false)
+  }
 
   const loadDossiers = async () => {
     setLoading(true)
@@ -101,7 +102,6 @@ export default function App() {
     })
   }
 
-  // Handlers pour les changements de formulaire
   const handleConformanceChange = (e) => {
     const { name, value } = e.target
     setConformanceData(prev => ({
@@ -118,7 +118,6 @@ export default function App() {
     }))
   }
 
-  // Fonction de validation complète
   const validateAllData = () => {
     const errors = {}
     const today = startOfDay(new Date())
@@ -268,6 +267,13 @@ export default function App() {
       sortiepromise: ''
     })
     setValidationMessage(null)
+  }
+
+  // ===== RENDER CONDITIONNEL À LA FIN =====
+
+  // Si non authentifié, afficher la page de login
+  if (!isAuthenticated) {
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />
   }
 
   return (
