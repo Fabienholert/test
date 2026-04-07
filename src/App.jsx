@@ -22,11 +22,6 @@ export default function App() {
     }
   }, [])
 
-  // Si non authentifié, afficher la page de login
-  if (!isAuthenticated) {
-    return <LoginPage onLoginSuccess={handleLoginSuccess} />
-  }
-
   function handleLoginSuccess(userData) {
     setUser(userData)
     setIsAuthenticated(true)
@@ -38,6 +33,11 @@ export default function App() {
     setIsAuthenticated(false)
     setUser(null)
     setShowLogout(false)
+  }
+
+  // Si non authentifié, afficher la page de login
+  if (!isAuthenticated) {
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />
   }
 
   // État pour la Section A (Conformité)
