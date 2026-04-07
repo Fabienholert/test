@@ -9,11 +9,13 @@ Votre application est maintenant sécurisée avec un système d'authentification
 Deux comptes utilisateurs ont été créés pour vous permettre de tester :
 
 ### Compte Technicien
+
 - **Email** : `technicien@vw.com`
 - **Mot de passe** : `Technicien123!`
 - **Accès** : Consultation et création de dossiers
 
 ### Compte Manager
+
 - **Email** : `manager@vw.com`
 - **Mot de passe** : `Manager123!`
 - **Accès** : Consultation et création de dossiers
@@ -43,11 +45,13 @@ Deux comptes utilisateurs ont été créés pour vous permettre de tester :
 ## 🛡️ Sécurité
 
 ### Frontend
+
 - Le token JWT est stocké dans `localStorage`
 - Le token est automatiquement envoyé à chaque requête API
 - En cas de token expiré (401), redirection automat vers login
 
 ### Backend
+
 - Middleware d'authentification sur toutes les routes `/api/dossiers`
 - Validation du JWT sur chaque requête protégée
 - Passwords stockés hashés avec bcrypt (jamais en clair)
@@ -56,6 +60,7 @@ Deux comptes utilisateurs ont été créés pour vous permettre de tester :
 ## 📝 Routes d'authentification
 
 ### Login
+
 ```bash
 POST /api/auth/login
 Content-Type: application/json
@@ -79,6 +84,7 @@ Réponse (200):
 ```
 
 ### Register (créer nouvel utilisateur)
+
 ```bash
 POST /api/auth/register
 Content-Type: application/json
@@ -92,6 +98,7 @@ Content-Type: application/json
 ```
 
 ### Obtenir ses infos
+
 ```bash
 GET /api/auth/me
 Authorization: Bearer <token>
@@ -118,33 +125,36 @@ Authorization: Bearer eyJhbGci...
 ## 🖥️ Utilisation depuis le frontend
 
 ### Le service dossierAPI gère automatiquement :
+
 ```javascript
 // Récupère le token depuis localStorage
 // Ajoute le header Authorization automatiquement
 // Renouvelle le login si token expiré (401)
 
-const dossiers = await dossierAPI.getAll()
+const dossiers = await dossierAPI.getAll();
 ```
 
 ### Gestion du login
+
 ```javascript
 // Page de login s'affiche si pas de token
-if (!localStorage.getItem('token')) {
+if (!localStorage.getItem("token")) {
   // Afficher LoginPage
 }
 
 // Après le login
-localStorage.setItem('token', response.token)
-localStorage.setItem('user', JSON.stringify(response.user))
+localStorage.setItem("token", response.token);
+localStorage.setItem("user", JSON.stringify(response.user));
 
 // Déconnexion
-localStorage.removeItem('token')
-localStorage.removeItem('user')
+localStorage.removeItem("token");
+localStorage.removeItem("user");
 ```
 
 ## 🔧 Créer un nouvel utilisateur (backend)
 
 ### Option 1 : Via l'API (à partir de l'app)
+
 ```bash
 curl -X POST http://localhost:5001/api/auth/register \
   -H "Content-Type: application/json" \
@@ -157,6 +167,7 @@ curl -X POST http://localhost:5001/api/auth/register \
 ```
 
 ### Option 2 : Via Node.js (script)
+
 ```bash
 cd backend
 node -e "
@@ -182,12 +193,15 @@ const User = require('./models/User');
 ## 🔐 Changer la clé secrète JWT
 
 ### En production, CHANGEZ obligatoirement :
+
 Modifiez dans `/backend/.env` :
+
 ```
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 ```
 
 Générez une clé forte :
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
@@ -211,15 +225,18 @@ App.jsx
 ## 🆘 Dépannage
 
 ### "Token invalide ou expiré"
+
 - ✓ Vérifiez que le token n'a pas expiré (24h)
 - ✓ Connectez-vous à nouveau
 
 ### "401 Unauthorized"
+
 - ✓ Le token JWT n'a pas été envoyé
 - ✓ Vérifiez localStorage contient le token
 - ✓ Rafraîchissez la page et reconnectez-vous
 
 ### "Email ou password incorrect"
+
 - ✓ Vérifiez vos identifiants
 - ✓ Les passwords sont sensibles à la casse
 - ✓ Utilisez format email complet (ex: technicien@vw.com)
@@ -227,6 +244,7 @@ App.jsx
 ## 📦 Variables d'environnement
 
 ### Backend (.env)
+
 ```
 MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/...
 PORT=5001
@@ -235,6 +253,7 @@ JWT_SECRET=your-secret-key
 ```
 
 ### Frontend (.env)
+
 ```
 VITE_API_URL=http://localhost:5001/api
 ```

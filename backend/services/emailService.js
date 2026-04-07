@@ -1,16 +1,16 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
 // À configurer avec vos identifiants Gmail
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
-    user: process.env.GMAIL_USER || 'fabienholert@gmail.com',
-    pass: process.env.GMAIL_PASSWORD || '' // À fournir au démarrage
-  }
+    user: process.env.GMAIL_USER || "fabienholert@gmail.com",
+    pass: process.env.GMAIL_PASSWORD || "", // À fournir au démarrage
+  },
 });
 
 const sendVerificationEmail = async (email, verificationToken, prenom) => {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
   const verificationLink = `${frontendUrl}/verify-email?token=${verificationToken}`;
 
   const htmlContent = `
@@ -54,14 +54,27 @@ const sendVerificationEmail = async (email, verificationToken, prenom) => {
 
   try {
     await transporter.sendMail({
-      from: process.env.GMAIL_USER || 'fabienholert@gmail.com',
+      from: process.env.GMAIL_USER || "fabienholert@gmail.com",
       to: email,
-      subject: '🔐 Vérifiez votre adresse email - Audit Garantie VW',
-      html: htmlContent
+      subject: "🔐 Vérifiez votre adresse email - Audit Garantie VW",
+      html: htmlContent,
     });
+
+    // En développement, afficher le token en logs pour le tester facilement
+    if (process.env.NODE_ENV === "development") {
+      console.log("\n" + "=".repeat(60));
+      console.log("📧 EMAIL DE VÉRIFICATION ENVOYÉ À:", email);
+      console.log("=".repeat(60));
+      console.log("🔗 LIEN DE VÉRIFICATION (pour tester en local):");
+      console.log(
+        `   http://localhost:5174/verify-email?token=${verificationToken}`,
+      );
+      console.log("=".repeat(60) + "\n");
+    }
+
     return { success: true };
   } catch (error) {
-    console.error('Erreur envoi email:', error);
+    console.error("Erreur envoi email:", error);
     return { success: false, error: error.message };
   }
 };

@@ -1,6 +1,12 @@
-import React from 'react'
-
-export default function SelectField({ label, name, value, onChange, options, required = false, error = null }) {
+export default function SelectField({
+  label,
+  name,
+  value,
+  onChange,
+  options,
+  required = false,
+  error = null,
+}) {
   return (
     <div className="form-group">
       <label htmlFor={name} className="form-label">
@@ -12,7 +18,7 @@ export default function SelectField({ label, name, value, onChange, options, req
         name={name}
         value={value}
         onChange={onChange}
-        className={`form-select ${error ? 'border-red-500 focus:ring-red-500' : ''}`}
+        className={`form-select ${error ? "border-red-500 focus:ring-red-500" : ""}`}
       >
         <option value="">-- Sélectionner --</option>
         {options.map((option) => (
@@ -23,5 +29,5 @@ export default function SelectField({ label, name, value, onChange, options, req
       </select>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </div>
-  )
+  );
 }

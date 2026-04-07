@@ -65,6 +65,7 @@ npm install
 ```
 
 Cela va installer :
+
 - ✓ React 18
 - ✓ Vite
 - ✓ Tailwind CSS
@@ -90,21 +91,24 @@ Les fichiers optimisés seront dans le dossier `dist/`
 
 ## 📋 Commandes Disponibles
 
-| Commande | Description |
-|----------|-------------|
-| `npm run dev` | Démarrer le serveur de développement |
-| `npm run build` | Créer la version de production |
+| Commande          | Description                                |
+| ----------------- | ------------------------------------------ |
+| `npm run dev`     | Démarrer le serveur de développement       |
+| `npm run build`   | Créer la version de production             |
 | `npm run preview` | Prévisualiser la build production en local |
-| `npm run lint` | Analyser le code pour les erreurs |
+| `npm run lint`    | Analyser le code pour les erreurs          |
 
 ## 🐛 Dépannage
 
 ### "npm: command not found"
+
 → Node.js n'est pas installé ou pas dans le PATH
 → Réinstallez via Homebrew ou node direct (voir ci-dessus)
 
 ### "ERR! Max retries exceeded"
+
 → Essayez de nettoyer le cache npm :
+
 ```bash
 npm cache clean --force
 rm -rf node_modules package-lock.json
@@ -112,7 +116,9 @@ npm install
 ```
 
 ### Port 5173 déjà utilisé
+
 → Changez le port dans `vite.config.js` :
+
 ```javascript
 server: {
   port: 5174,  // Ou un autre port libre
@@ -121,7 +127,9 @@ server: {
 ```
 
 ### Erreur "EACCES: permission denied"
+
 → Sur macOS/Linux, essayez :
+
 ```bash
 sudo npm install -g npm
 ```

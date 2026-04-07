@@ -1,19 +1,18 @@
-import React from 'react'
-
-export default function SectionTracking({ records }) {
+export default function SectionTracking({ records, onDelete }) {
   const calculateDocsOK = (record) => {
-    const protocoleOK = record.protocole === 'Oui'
-    const ppsoOK = record.ppso === 'Oui'
-    const ficheOK = record.fichePedagogique !== 'Non' && record.fichePedagogique !== ''
-    const tpiOK = record.tpi !== 'Non' && record.tpi !== ''
-    return protocoleOK && ppsoOK && ficheOK && tpiOK
-  }
+    const protocoleOK = record.protocole === "Oui";
+    const ppsoOK = record.ppso === "Oui";
+    const ficheOK =
+      record.fichePedagogique !== "Non" && record.fichePedagogique !== "";
+    const tpiOK = record.tpi !== "Non" && record.tpi !== "";
+    return protocoleOK && ppsoOK && ficheOK && tpiOK;
+  };
 
   const formatDate = (dateString) => {
-    if (!dateString) return '-'
-    const date = new Date(dateString + 'T00:00:00')
-    return date.toLocaleDateString('fr-FR')
-  }
+    if (!dateString) return "-";
+    const date = new Date(dateString + "T00:00:00");
+    return date.toLocaleDateString("fr-FR");
+  };
 
   return (
     <div className="section-card border-l-4 border-validation bg-green-50">
@@ -23,7 +22,8 @@ export default function SectionTracking({ records }) {
 
       {records.length === 0 ? (
         <p className="text-gray-500 italic text-center py-8">
-          Aucun dossier validé pour le moment. Complétez et validez les sections A et B.
+          Aucun dossier validé pour le moment. Complétez et validez les sections
+          A et B.
         </p>
       ) : (
         <div className="overflow-x-auto">
@@ -38,16 +38,26 @@ export default function SectionTracking({ records }) {
                 <th className="px-4 py-3 text-left font-bold">Technicien</th>
                 <th className="px-4 py-3 text-left font-bold">Protocole</th>
                 <th className="px-4 py-3 text-left font-bold">PPSO</th>
-                <th className="px-4 py-3 text-center font-bold bg-validation text-white">Docs OK</th>
+                <th className="px-4 py-3 text-center font-bold bg-validation text-white">
+                  Docs OK
+                </th>
                 <th className="px-4 py-3 text-left font-bold">Diag</th>
-                <th className="px-4 py-3 text-left font-bold">Sortie Promise</th>
+                <th className="px-4 py-3 text-left font-bold">
+                  Sortie Promise
+                </th>
+                <th className="px-4 py-3 text-center font-bold bg-red-500 text-white w-12">
+                  ✕
+                </th>
               </tr>
             </thead>
             <tbody>
               {records.map((record, idx) => {
-                const docsOK = calculateDocsOK(record)
+                const docsOK = calculateDocsOK(record);
                 return (
-                  <tr key={idx} className={`border-b ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-yellow-50`}>
+                  <tr
+                    key={idx}
+                    className={`border-b ${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-yellow-50`}
+                  >
                     <td className="px-4 py-3 font-medium">{record.orNumber}</td>
                     <td className="px-4 py-3">{record.dissNumber}</td>
                     <td className="px-4 py-3">{record.vin}</td>
@@ -55,24 +65,43 @@ export default function SectionTracking({ records }) {
                     <td className="px-4 py-3">{record.km}</td>
                     <td className="px-4 py-3">{record.technicien}</td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded text-white text-xs font-bold ${record.protocole === 'Oui' ? 'bg-validation' : 'bg-red-500'}`}>
+                      <span
+                        className={`px-2 py-1 rounded text-white text-xs font-bold ${record.protocole === "Oui" ? "bg-validation" : "bg-red-500"}`}
+                      >
                         {record.protocole}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded text-white text-xs font-bold ${record.ppso === 'Oui' ? 'bg-validation' : 'bg-red-500'}`}>
+                      <span
+                        className={`px-2 py-1 rounded text-white text-xs font-bold ${record.ppso === "Oui" ? "bg-validation" : "bg-red-500"}`}
+                      >
                         {record.ppso}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`px-3 py-1 rounded text-white text-xs font-bold ${docsOK ? 'bg-validation' : 'bg-red-500'}`}>
-                        {docsOK ? '✓ OUI' : '✗ NON'}
+                      <span
+                        className={`px-3 py-1 rounded text-white text-xs font-bold ${docsOK ? "bg-validation" : "bg-red-500"}`}
+                      >
+                        {docsOK ? "✓ OUI" : "✗ NON"}
                       </span>
                     </td>
                     <td className="px-4 py-3">{formatDate(record.dateDiag)}</td>
-                    <td className="px-4 py-3">{formatDate(record.sortiepromise)}</td>
+                    <td className="px-4 py-3">
+                      {formatDate(record.sortiepromise)}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {onDelete && (
+                        <button
+                          onClick={() => onDelete(record._id)}
+                          className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded transition"
+                          title="Supprimer ce dossier"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </td>
                   </tr>
-                )
+                );
               })}
             </tbody>
           </table>
@@ -82,12 +111,12 @@ export default function SectionTracking({ records }) {
       {records.length > 0 && (
         <div className="mt-4 p-3 bg-white rounded border border-gray-300">
           <p className="text-sm text-gray-600">
-            <strong>Total dossiers validés:</strong> {records.length} | 
-            <strong> Docs OK:</strong> {records.filter(r => calculateDocsOK(r)).length}/
-            {records.length}
+            <strong>Total dossiers validés:</strong> {records.length} |
+            <strong> Docs OK:</strong>{" "}
+            {records.filter((r) => calculateDocsOK(r)).length}/{records.length}
           </p>
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -47,6 +47,7 @@ npm run dev
 ```
 
 **✓ Le serveur devrait afficher:**
+
 ```
   VITE v5.0.0  ready in XXX ms
   ➜  Local:   http://localhost:5173/
@@ -54,6 +55,7 @@ npm run dev
 ```
 
 **✗ L'app ne s'ouvre pas ?**
+
 - Ouvrez manuellement http://localhost:5173
 - Vérifiez que le port 5173 est libre
 
@@ -169,6 +171,7 @@ npm run dev
 ## 🐛 Étape 6 : Dépannage
 
 ### Erreur "port 5173 déjà utilisé"
+
 ```bash
 # Tuer le processus
 lsof -ti:5173 | xargs kill -9
@@ -178,6 +181,7 @@ server: { port: 5174 }
 ```
 
 ### Erreurs de dépendances
+
 ```bash
 # Nettoyer et réinstaller
 rm -rf node_modules package-lock.json
@@ -185,6 +189,7 @@ npm install
 ```
 
 ### La page ne se rafraîchit pas
+
 ```
 - Vérifiez que vous êtes sur http://localhost:5173 (pas 5174, 3000, etc.)
 - Videz le cache du navigateur : Ctrl+Maj+Suppr
@@ -192,6 +197,7 @@ npm install
 ```
 
 ### Messages d'erreur en console (F12)
+
 - Les warnings jaunes sont normaux
 - Si erreurs rouges : vérifiez les étapes 1-2
 
@@ -238,6 +244,7 @@ Si vous avez coché ✓ tous les points ci-dessus, **la setup est complète !**
 ### Prochaines Étapes
 
 Voir les fichiers de documentation :
+
 - **Pour utiliser** : `GUIDE_UTILISATEUR.md`
 - **Architecture** : `ARCHITECTURE.md`
 - **Développement** : `DOCUMENTATION_TECHNIQUE.md`
@@ -257,6 +264,7 @@ npm run dev
 ---
 
 **Besoin d'aide ?**
+
 1. Relisez INSTALLATION.md
 2. Vérifiez les erreurs en console (F12)
 3. Consultez GUIDE_UTILISATEUR.md pour les fonctionnalités

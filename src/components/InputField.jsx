@@ -1,6 +1,12 @@
-import React from 'react'
-
-export default function InputField({ label, name, value, onChange, required = false, placeholder = "", error = null }) {
+export default function InputField({
+  label,
+  name,
+  value,
+  onChange,
+  required = false,
+  placeholder = "",
+  error = null,
+}) {
   return (
     <div className="form-group">
       <label htmlFor={name} className="form-label">
@@ -14,9 +20,9 @@ export default function InputField({ label, name, value, onChange, required = fa
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={`form-input ${error ? 'border-red-500 focus:ring-red-500' : ''}`}
+        className={`form-input ${error ? "border-red-500 focus:ring-red-500" : ""}`}
       />
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </div>
-  )
+  );
 }

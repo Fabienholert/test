@@ -7,6 +7,7 @@ Guide complet des fichiers et ressources du projet.
 ## 📚 Documentation (Lire en Premier)
 
 ### Pour Démarrer Rapidement
+
 1. **[SUMMARY.md](SUMMARY.md)** ⭐ START HERE
    - Résumé de ce qui a été créé
    - Quick start en 3 étapes
@@ -18,6 +19,7 @@ Guide complet des fichiers et ressources du projet.
    - Dépannage rapide
 
 ### Pour Installer & Configurer
+
 3. **[INSTALLATION.md](INSTALLATION.md)**
    - Guide complet pour installer Node.js
    - Instructions détaillées par OS
@@ -29,6 +31,7 @@ Guide complet des fichiers et ressources du projet.
    - Commandes disponibles
 
 ### Pour Utiliser l'Application
+
 5. **[GUIDE_UTILISATEUR.md](GUIDE_UTILISATEUR.md)**
    - Manuel utilisateur complet
    - Mode d'emploi section par section
@@ -36,6 +39,7 @@ Guide complet des fichiers et ressources du projet.
    - FAQ et dépannage
 
 ### Pour Développer
+
 6. **[ARCHITECTURE.md](ARCHITECTURE.md)**
    - Architecture complète du projet
    - Flux de données
@@ -49,6 +53,7 @@ Guide complet des fichiers et ressources du projet.
    - Détails des hooks React
 
 ### Pour Suivi
+
 8. **[CHANGELOG.md](CHANGELOG.md)**
    - Historique des versions
    - Fonctionnalités par version
@@ -59,6 +64,7 @@ Guide complet des fichiers et ressources du projet.
 ## 💻 Code Source (src/)
 
 ### Point d'Entrée
+
 - **[src/main.jsx](src/main.jsx)**
   - Point d'entrée React
   - Initialise l'application
@@ -70,6 +76,7 @@ Guide complet des fichiers et ressources du projet.
   - Variables de couleurs personnalisées
 
 ### Composant Principal
+
 - **[src/App.jsx](src/App.jsx)** ⭐ CŒUR DE L'APP
   - Orchestrateur d'état
   - Gère les 3 sections (A, B, C)
@@ -78,6 +85,7 @@ Guide complet des fichiers et ressources du projet.
   - ~400 lignes
 
 ### Composants Réutilisables
+
 - **[src/components/InputField.jsx](src/components/InputField.jsx)**
   - Champ texte avec validation
   - Affichage des erreurs
@@ -94,6 +102,7 @@ Guide complet des fichiers et ressources du projet.
   - Utilisé pour dates d'accès
 
 ### Composants Métier
+
 - **[src/components/SectionConformance.jsx](src/components/SectionConformance.jsx)**
   - Section A : Validation stricte
   - 4 champs + 4 règles de blocage
@@ -118,6 +127,7 @@ Guide complet des fichiers et ressources du projet.
 ## 🔧 Configuration (Racine)
 
 ### Configuration Build & Package
+
 - **[package.json](package.json)**
   - Dépendances (React, Vite, Tailwind, date-fns)
   - Scripts npm (dev, build, preview, lint)
@@ -129,6 +139,7 @@ Guide complet des fichiers et ressources du projet.
   - Plugin React automatique
 
 ### Configuration Styles
+
 - **[tailwind.config.js](tailwind.config.js)**
   - Couleurs personnalisées (compliance, capture, validation)
   - Thème Tailwind
@@ -139,6 +150,7 @@ Guide complet des fichiers et ressources du projet.
   - Plugins : Tailwind + Autoprefixer
 
 ### Configuration IDE & Git
+
 - **[.eslintrc.json](.eslintrc.json)**
   - Règles de linting
   - Détection errors JS
@@ -149,6 +161,7 @@ Guide complet des fichiers et ressources du projet.
   - node_modules/, dist/, .DS_Store, etc.
 
 ### HTML & Entry
+
 - **[index.html](index.html)**
   - Template HTML
   - Élément #root
@@ -202,38 +215,47 @@ Total : 21 fichiers+ node_modules/ (après npm install)
 ### "Je veux..."
 
 #### ...démarrer rapidement
+
 → [SUMMARY.md](SUMMARY.md) (3 min)
 → [CHECKLIST.md](CHECKLIST.md) (5 min)
 
 #### ...installer Node.js / npm
+
 → [INSTALLATION.md](INSTALLATION.md)
 
 #### ...utiliser l'app en tant qu'utilisateur
+
 → [GUIDE_UTILISATEUR.md](GUIDE_UTILISATEUR.md)
 
 #### ...comprendre l'architecture
+
 → [ARCHITECTURE.md](ARCHITECTURE.md)
 
 #### ...modifier le code
+
 → [src/App.jsx](src/App.jsx) (logique principale)
 → [src/components/](src/components/) (composants)
 → [DOCUMENTATION_TECHNIQUE.md](DOCUMENTATION_TECHNIQUE.md)
 
 #### ...déployer en production
+
 → [README.md](README.md) section "Build"
 → [CHANGELOG.md](CHANGELOG.md) section "Évolutions"
 
 #### ...ajouter une fonctionnalité
+
 → [ARCHITECTURE.md](ARCHITECTURE.md) (structure)
 → [DOCUMENTATION_TECHNIQUE.md](DOCUMENTATION_TECHNIQUE.md) (interfaces)
 → Modifier [src/App.jsx](src/App.jsx) ou ajouter un composant
 
 #### ...déboguer une erreur
+
 → [GUIDE_UTILISATEUR.md](GUIDE_UTILISATEUR.md) section "Dépannage"
 → [INSTALLATION.md](INSTALLATION.md) section "Dépannage"
 → Vérifier la console (F12)
 
 #### ...voir les versions futures
+
 → [CHANGELOG.md](CHANGELOG.md) section "À venir"
 
 ---
@@ -241,6 +263,7 @@ Total : 21 fichiers+ node_modules/ (après npm install)
 ## 📝 Fichiers par Type
 
 ### 📚 Documentation
+
 ```
 ├── INDEX.md (ce fichier)
 ├── README.md
@@ -254,6 +277,7 @@ Total : 21 fichiers+ node_modules/ (après npm install)
 ```
 
 ### 💻 Code React
+
 ```
 src/
 ├── App.jsx (400 lignes)
@@ -269,6 +293,7 @@ src/
 ```
 
 ### 🔧 Configuration
+
 ```
 ├── package.json
 ├── vite.config.js
@@ -284,21 +309,23 @@ src/
 ## 🎯 Namespaces & Conventions
 
 ### Variables d'État (useState)
+
 ```javascript
 // Section A - Conformance
-conformanceData, setConformanceData
+(conformanceData, setConformanceData);
 
 // Section B - Capture
-captureData, setCaptureData
+(captureData, setCaptureData);
 
 // Section C - Tracking
-records, setRecords
+(records, setRecords);
 
 // Messages
-validationMessage, setValidationMessage
+(validationMessage, setValidationMessage);
 ```
 
 ### Toutes les Couleurs
+
 ```css
 Compliance (OR)     : #FF8C00 (Orange)
 Capture (Saisie)    : #0066CC (Bleu)
@@ -306,20 +333,21 @@ Validation (Suivi)  : #22C55E (Vert)
 ```
 
 ### Conventions de Nommage
+
 ```javascript
 // Composants
-SectionConformance.jsx    // PascalCase
-InputField.jsx            // PascalCase
+SectionConformance.jsx; // PascalCase
+InputField.jsx; // PascalCase
 
 // Fonctions
-handleValidation()        // camelCase
-calculateDocsOK()         // camelCase
-validateAllData()         // camelCase
+handleValidation(); // camelCase
+calculateDocsOK(); // camelCase
+validateAllData(); // camelCase
 
 // État
-conformanceData           // camelCase
-captureData              // camelCase
-validationMessage        // camelCase
+conformanceData; // camelCase
+captureData; // camelCase
+validationMessage; // camelCase
 ```
 
 ---
@@ -338,6 +366,7 @@ validationMessage        // camelCase
 ## 📞 Roadmap de Lecture
 
 ### Pour Utilisateurs Finals
+
 ```
 SUMMARY.md
     ↓
@@ -349,6 +378,7 @@ GUIDE_UTILISATEUR.md
 ```
 
 ### Pour Développeurs
+
 ```
 SUMMARY.md
     ↓
@@ -362,6 +392,7 @@ src/components/*.jsx
 ```
 
 ### Pour Admins/DevOps
+
 ```
 README.md
     ↓
@@ -393,22 +424,23 @@ npm run lint          # Analyser le code
 
 ## 📊 Statistiques du Projet
 
-| Métrique | Valeur |
-|----------|--------|
-| Fichiers Documentation | 9 |
-| Fichiers Code | 7 |
-| Fichiers Configuration | 6 |
-| **Total** | **22** |
-| Composants React | 6 |
-| Champs Formulaire | 21 |
-| Règles Validation | 4 |
-| Dépendances NPM | 6 |
+| Métrique               | Valeur |
+| ---------------------- | ------ |
+| Fichiers Documentation | 9      |
+| Fichiers Code          | 7      |
+| Fichiers Configuration | 6      |
+| **Total**              | **22** |
+| Composants React       | 6      |
+| Champs Formulaire      | 21     |
+| Règles Validation      | 4      |
+| Dépendances NPM        | 6      |
 
 ---
 
 ## 🔐 Sécurité & Best Practices
 
 ### Cet projet suit :
+
 - ✓ Composants React modulaires
 - ✓ Props clear et typées
 - ✓ Validation stricte
@@ -418,6 +450,7 @@ npm run lint          # Analyser le code
 - ✓ Linting automatique (ESLint)
 
 ### À améliorer dans v0.2.0+ :
+
 - [ ] TypeScript pour typage statique
 - [ ] Tests unitaires (Jest)
 - [ ] Context API pour état global

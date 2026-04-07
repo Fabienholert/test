@@ -35,16 +35,16 @@ interface CaptureData {
   pointageAtelier: string;
   codeDommage: string;
   codeAvarie: string;
-  
+
   // Questions Oui/Non
   dissOpen: 'Oui' | 'Non' | '';
   protocole: 'Oui' | 'Non' | '';
   ppso: 'Oui' | 'Non' | '';
-  
+
   // Identifiants optionnels (N° ou "Non")
   fichePedagogique: string;  // Peut être un N°, "Non", ou vide
   tpi: string;               // Peut être un N°, "Non", ou vide
-  
+
   // Dates
   dateDiag: string;          // Format: YYYY-MM-DD
   sortiepromise: string;     // Format: YYYY-MM-DD
@@ -190,7 +190,7 @@ function validateAllData(): ValidationErrors {
   const today = startOfDay(new Date());
 
   // Section A - Conformité
-  
+
   // 1. Réclamation
   if (!conformanceData.reclamation) {
     errors.conformanceReclamation = 'Réclamation client requise'
@@ -212,7 +212,7 @@ function validateAllData(): ValidationErrors {
     const entryDate = parseISO(conformanceData.dateEntree)
     const daysDiff = differenceInDays(today, entryDate)
     if (daysDiff > 30) {
-      errors.conformanceDateEntree = 
+      errors.conformanceDateEntree =
         `BLOCAGE: Date d'entrée a ${daysDiff} jours (max 30)`
     }
   }
@@ -221,12 +221,12 @@ function validateAllData(): ValidationErrors {
   if (!conformanceData.dateImpression) {
     errors.conformanceDateImpression = 'Date d\'impression requise'
   } else {
-    if (conformanceData.dateEntree && 
+    if (conformanceData.dateEntree &&
         isAfter(
           parseISO(conformanceData.dateImpression),
           parseISO(conformanceData.dateEntree)
         )) {
-      errors.conformanceDateImpression = 
+      errors.conformanceDateImpression =
         'BLOCAGE: Date d\'impression ne peut pas être après la date d\'entrée'
     }
   }
@@ -277,11 +277,11 @@ function validateAllData(): ValidationErrors {
 function calculateDocsOK(record: Record): boolean {
   const protocoleOK = record.protocole === 'Oui'
   const ppsoOK = record.ppso === 'Oui'
-  const ficheOK = record.fichePedagogique !== 'Non' && 
+  const ficheOK = record.fichePedagogique !== 'Non' &&
                   record.fichePedagogique !== ''
-  const tpiOK = record.tpi !== 'Non' && 
+  const tpiOK = record.tpi !== 'Non' &&
                 record.tpi !== ''
-  
+
   return protocoleOK && ppsoOK && ficheOK && tpiOK
 }
 ```
@@ -303,7 +303,7 @@ const [captureData, setCaptureData] = useState<CaptureData>(
 const [records, setRecords] = useState<Record[]>([])
 
 // Messages de validation
-const [validationMessage, setValidationMessage] = 
+const [validationMessage, setValidationMessage] =
   useState<ValidationMessage | null>(null)
 ```
 
@@ -341,103 +341,109 @@ function getDaysDiff(dateString: string): number {
 
 ```javascript
 // Total de dossiers
-const totalRecords = records.length
+const totalRecords = records.length;
 
 // Dossiers avec Docs OK
-const docsOkCount = records.filter(r => calculateDocsOK(r)).length
+const docsOkCount = records.filter((r) => calculateDocsOK(r)).length;
 
 // Dossiers à revoir
-const docsMissingCount = records.length - docsOkCount
+const docsMissingCount = records.length - docsOkCount;
 
 // Taux de conformité
-const complianceRate = records.length > 0 
-  ? Math.round((docsOkCount / records.length) * 100)
-  : 0
+const complianceRate =
+  records.length > 0 ? Math.round((docsOkCount / records.length) * 100) : 0;
 ```
 
 ## 🎯 Flux d'Actions
 
 ### handleConformanceChange(event)
+
 ```javascript
-const { name, value } = event.target
-setConformanceData(prev => ({
+const { name, value } = event.target;
+setConformanceData((prev) => ({
   ...prev,
-  [name]: value
-}))
+  [name]: value,
+}));
 // Met à jour un seul champ de Section A
 ```
 
 ### handleCaptureChange(event)
+
 ```javascript
-const { name, value } = event.target
-setCaptureData(prev => ({
+const { name, value } = event.target;
+setCaptureData((prev) => ({
   ...prev,
-  [name]: value
-}))
+  [name]: value,
+}));
 // Met à jour un seul champ de Section B
 ```
 
 ### handleValidation()
+
 ```javascript
-const errors = validateAllData()
+const errors = validateAllData();
 
 if (Object.keys(errors).length > 0) {
   // Erreurs trouvées
   setValidationMessage({
-    type: 'error',
-    text: `Erreurs détectées:\n${Object.values(errors).join('\n')}`
-  })
+    type: "error",
+    text: `Erreurs détectées:\n${Object.values(errors).join("\n")}`,
+  });
 } else {
   // Succès - Ajouter au tableau
-  const newRecord = { ...conformanceData, ...captureData }
-  setRecords(prev => [...prev, newRecord])
-  
+  const newRecord = { ...conformanceData, ...captureData };
+  setRecords((prev) => [...prev, newRecord]);
+
   // Réinitialiser les formulaires
-  setConformanceData(defaultConformanceData)
-  setCaptureData(defaultCaptureData)
-  
+  setConformanceData(defaultConformanceData);
+  setCaptureData(defaultCaptureData);
+
   // Message de succès
   setValidationMessage({
-    type: 'success',
-    text: 'Dossier validé et ajouté au tableau de suivi ✓'
-  })
-  
+    type: "success",
+    text: "Dossier validé et ajouté au tableau de suivi ✓",
+  });
+
   // Effacer le message après 3 secondes
-  setTimeout(() => setValidationMessage(null), 3000)
+  setTimeout(() => setValidationMessage(null), 3000);
 }
 ```
 
 ### handleReset()
+
 ```javascript
-setConformanceData(defaultConformanceData)
-setCaptureData(defaultCaptureData)
-setValidationMessage(null)
+setConformanceData(defaultConformanceData);
+setCaptureData(defaultCaptureData);
+setValidationMessage(null);
 // Réinitialise tout sauf les records du tableau
 ```
 
 ## 🔐 Règles de Blocage Détaillées
 
 ### Blocage 1: Réclamation = Non
+
 ```javascript
-if (conformanceData.reclamation === 'Non') {
+if (conformanceData.reclamation === "Non") {
   // ❌ BLOCAGE
   // Validation impossible
 }
 ```
 
 ### Blocage 2: Signature = Non
+
 ```javascript
-if (conformanceData.signature === 'Non') {
+if (conformanceData.signature === "Non") {
   // ❌ BLOCAGE
   // Validation impossible
 }
 ```
 
 ### Blocage 3: Date Entrée > 30 jours
+
 ```javascript
-const entryDate = parseISO(conformanceData.dateEntree)
-const today = startOfDay(new Date())
-const daysDiff = differenceInDays(today, entryDate)
+const entryDate = parseISO(conformanceData.dateEntree);
+const today = startOfDay(new Date());
+const daysDiff = differenceInDays(today, entryDate);
 
 if (daysDiff > 30) {
   // ❌ BLOCAGE
@@ -447,9 +453,10 @@ if (daysDiff > 30) {
 ```
 
 ### Blocage 4: Date Impression après Date Entrée
+
 ```javascript
-const printDate = parseISO(conformanceData.dateImpression)
-const entryDate = parseISO(conformanceData.dateEntree)
+const printDate = parseISO(conformanceData.dateImpression);
+const entryDate = parseISO(conformanceData.dateEntree);
 
 if (isAfter(printDate, entryDate)) {
   // ❌ BLOCAGE
@@ -465,7 +472,7 @@ Les classes composants sont définis dans `src/index.css` avec `@layer`:
 .section-card {
   background-color: white;
   border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
 }
@@ -479,13 +486,25 @@ Les classes composants sont définis dans `src/index.css` avec `@layer`:
 }
 
 /* Couleurs personnalisées */
-.border-compliance { border-color: #FF8C00; }
-.border-capture { border-color: #0066CC; }
-.border-validation { border-color: #22C55E; }
+.border-compliance {
+  border-color: #ff8c00;
+}
+.border-capture {
+  border-color: #0066cc;
+}
+.border-validation {
+  border-color: #22c55e;
+}
 
-.bg-compliance { background-color: #FF8C00; }
-.bg-capture { background-color: #0066CC; }
-.bg-validation { background-color: #22C55E; }
+.bg-compliance {
+  background-color: #ff8c00;
+}
+.bg-capture {
+  background-color: #0066cc;
+}
+.bg-validation {
+  background-color: #22c55e;
+}
 ```
 
 ---

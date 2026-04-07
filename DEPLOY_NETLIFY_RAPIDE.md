@@ -38,6 +38,7 @@ git push -u origin main
 ```
 
 **GitHub demande la password ?**
+
 - Créez un token : https://github.com/settings/tokens
 - Copiez le token
 - Coller comme password
@@ -104,6 +105,7 @@ git push origin main
 Votre application est maintenant en ligne et accessible à tous ! 🎉
 
 **Lien pour partager :**
+
 ```
 https://audit-garantie-vw-xxxxx.netlify.app
 ```

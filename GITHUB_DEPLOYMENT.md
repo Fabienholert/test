@@ -44,19 +44,23 @@ Connectez-vous directement sur [github.com](https://github.com)
 ### Étape 2 : Remplir les Paramètres
 
 **Repository name :**
+
 ```
 audit-garantie-vw
 ```
 
 **Description :**
+
 ```
 Gestion de réception après-vente et audit garantie Volkswagen
 ```
 
 **Visibility :**
+
 - ✓ Public (pour que ce soit accessible)
 
 **Initialize this repository with :**
+
 - ☐ Add a README.md
 - ☐ Add .gitignore
 - ☐ Choose a license
@@ -70,6 +74,7 @@ Cliquez **"Create repository"**
 ### Étape 4 : Copier l'URL du Repository
 
 Vous verrez une URL comme :
+
 ```
 https://github.com/VOTRE_USERNAME/audit-garantie-vw.git
 ```
@@ -107,6 +112,7 @@ git push -u origin main
 ```
 
 **Première fois** : GitHub vous demandera de vous authentifier
+
 - Choisissez "Authenticate with a password using a personal access token"
 - Ou utilisez les clés SSH
 
@@ -125,7 +131,7 @@ Netlify est **gratuit**, **rapide** et **facile** pour déployer des apps Vite/R
 ### Étape 1 : Se Connecter à Netlify
 
 1. Allez sur [netlify.com](https://netlify.com)
-2. Cliquez **"Sign up"** 
+2. Cliquez **"Sign up"**
 3. Choisissez **"Sign up with GitHub"**
 4. Autorisez Netlify à accéder à GitHub
 
@@ -139,6 +145,7 @@ Netlify est **gratuit**, **rapide** et **facile** pour déployer des apps Vite/R
 ### Étape 3 : Configurer le Build
 
 **Netlify détectera automatiquement :**
+
 - Build command : `npm run build`
 - Publish directory : `dist`
 
@@ -192,6 +199,7 @@ Vercel est aussi très populaire pour les apps React/Vite.
 ### Étape 3 : Configurer
 
 Les paramètres sont détectés automatiquement :
+
 - Framework : **Vite**
 - Build command : `npm run build`
 - Output directory : `dist`
@@ -206,7 +214,7 @@ Votre app sera en ligne sur une URL Vercel !
 
 ## 📄 Déployer sur GitHub Pages (Gratuit)
 
-GitHub Pages est *gratuit* mais moins flexible.
+GitHub Pages est _gratuit_ mais moins flexible.
 
 ### Étape 1 : Modifier vite.config.js
 
@@ -215,12 +223,12 @@ Ouvrez `vite.config.js` et changez :
 ```javascript
 export default defineConfig({
   plugins: [react()],
-  base: '/audit-garantie-vw/',  // ← AJOUTER CETTE LIGNE
+  base: "/audit-garantie-vw/", // ← AJOUTER CETTE LIGNE
   server: {
     port: 5173,
-    open: true
-  }
-})
+    open: true,
+  },
+});
 ```
 
 ### Étape 2 : Créer un Workflow GitHub Actions
@@ -240,14 +248,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - uses: actions/setup-node@v3
         with:
-          node-version: '18'
-      
+          node-version: "18"
+
       - run: npm install
       - run: npm run build
-      
+
       - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -270,6 +278,7 @@ git push origin main
 4. Branch : gh-pages → Save
 
 Votre app sera accessible sur :
+
 ```
 https://VOTRE_USERNAME.github.io/audit-garantie-vw/
 ```
@@ -278,11 +287,11 @@ https://VOTRE_USERNAME.github.io/audit-garantie-vw/
 
 ## 🎯 Comparaison des Options
 
-| Plateforme | Gratuit | Domaine | Speed | Ease | Recommandation |
-|-----------|---------|---------|-------|------|---|
-| **Netlify** | ✓ | Payant | Très rapide | Très facile | ⭐ MEILLEUR |
-| **Vercel** | ✓ | Payant | Très rapide | Très facile | ⭐ BON |
-| **GitHub Pages** | ✓ | Gratuit | Rapide | Modéré | OK |
+| Plateforme       | Gratuit | Domaine | Speed       | Ease        | Recommandation |
+| ---------------- | ------- | ------- | ----------- | ----------- | -------------- |
+| **Netlify**      | ✓       | Payant  | Très rapide | Très facile | ⭐ MEILLEUR    |
+| **Vercel**       | ✓       | Payant  | Très rapide | Très facile | ⭐ BON         |
+| **GitHub Pages** | ✓       | Gratuit | Rapide      | Modéré      | OK             |
 
 **Recommandation : Netlify** (Free, facile, rapide)
 
@@ -300,6 +309,7 @@ https://VOTRE_USERNAME.github.io/audit-garantie-vw/
 ### Vérifier les Erreurs
 
 Si le déploiement échoue :
+
 1. Cliquez sur l'erreur dans "Deploys"
 2. Vérifiez les logs de build
 3. Erreurs communes :
@@ -386,6 +396,7 @@ git remote set-url origin https://github.com/VOTRE_USERNAME/audit-garantie-vw.gi
 ### Le Déploiement Échoue
 
 Vérifiez :
+
 1. `npm install` fonctionne en local
 2. `npm run build` fonctionne en local
 3. Le dossier `dist/` est créé
@@ -429,6 +440,7 @@ MAINTENANCE
 ## 📞 Besoin d'Aide ?
 
 ### Liens Utiles
+
 - [GitHub Docs](https://docs.github.com)
 - [Netlify Docs](https://docs.netlify.com)
 - [Vercel Docs](https://vercel.com/docs)
@@ -455,6 +467,7 @@ git remote set-url origin https://nouveau-url.git
 ## 🎉 Vous Avez Terminé !
 
 Votre app **Audit Garantie VW** est maintenant :
+
 - ✓ Stockée sur GitHub
 - ✓ Déployée en ligne
 - ✓ Accessible au monde entier
@@ -464,6 +477,7 @@ Partagez le lien ! 🚗✨
 ---
 
 **Prochaines étapes :**
+
 1. Configurez un domaine personnalisé (optionnel)
 2. Ajoutez des statistiques (Google Analytics)
 3. Configurez les notifications de build (email)

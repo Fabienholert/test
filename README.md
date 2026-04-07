@@ -5,36 +5,46 @@ Application React de saisie pour les réceptionnaires automobiles avec système 
 ## 📋 Fonctionnalités Principales
 
 ### Section A : Conformité OR (Blocage)
+
 Vérification initiale des critères de conformité obligatoires :
+
 - ✓ Réclamation client (Oui/Non)
 - ✓ Signature dossier (Oui/Non)
 - ✓ Date d'entrée véhicule
 - ✓ Date d'impression OR
 
 **Règles de blocage strictes :**
+
 - Réclamation ET Signature doivent être "Oui"
 - Date d'entrée ne peut pas avoir plus de 30 jours
 - Date d'impression ne peut pas être postérieure à la date d'entrée
 
 ### Section B : Fiche de Saisie Réception
+
 Tous les champs obligatoires pour le dossier technique :
 
 **Saisie libre :**
+
 - OR #, N°DISS, VIN, Modèle, KM, Technicien, Pointage Atelier, Code Dommage, Code Avarie
 
 **Questions Oui/Non :**
+
 - DISS ouvert, Protocole en ligne, PPSO
 
 **Identifiants optionnels :**
+
 - Fiche pédagogique (N° ou "Non")
 - TPI (N° ou "Non")
 
 **Dates :**
+
 - Date du Diag
 - Sortie Promise
 
 ### Section C : Tableau de Suivi
+
 Historique de tous les dossiers validés avec :
+
 - Colonnes principales (OR #, DISS, VIN, Modèle, KM, Technicien)
 - Status de conformité (Protocole, PPSO)
 - **Colonne "Docs OK"** : Validée si Protocole=Oui ET PPSO=Oui ET Fiche/TPI ne sont pas "Non"
@@ -44,6 +54,7 @@ Historique de tous les dossiers validés avec :
 ## 🎨 Design
 
 **Utilisation de Tailwind CSS avec couleurs distinctes :**
+
 - 🟠 **Orange** : Section A (Conformité/Blocage)
 - 🔵 **Bleu** : Section B (Saisie/Capture)
 - 🟢 **Vert** : Section C (Validation/Suivi)
@@ -51,15 +62,18 @@ Historique de tous les dossiers validés avec :
 ## 🚀 Installation et Démarrage
 
 ### Prérequis
+
 - Node.js 16+
 - npm ou yarn
 
 ### Installation
+
 ```bash
 npm install
 ```
 
 ### Démarrage en développement
+
 ```bash
 npm run dev
 ```
@@ -67,6 +81,7 @@ npm run dev
 L'application s'ouvrira automatiquement sur `http://localhost:5173`
 
 ### Build pour production
+
 ```bash
 npm run build
 ```
@@ -104,9 +119,9 @@ App.jsx (Composant principal)
 
 3. **Calcul automatique "Docs OK"**
    ```javascript
-   Docs OK = (Protocole === 'Oui') AND 
-             (PPSO === 'Oui') AND 
-             (Fiche pédagogique !== 'Non' AND !== '') AND 
+   Docs OK = (Protocole === 'Oui') AND
+             (PPSO === 'Oui') AND
+             (Fiche pédagogique !== 'Non' AND !== '') AND
              (TPI !== 'Non' AND !== '')
    ```
 
@@ -146,6 +161,7 @@ Propriétaire - Volkswagen Audit Garantie
 ## 👨‍💻 Développement
 
 Structure du projet :
+
 ```
 ├── src/
 │   ├── components/          # Composants React

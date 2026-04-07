@@ -68,6 +68,7 @@ npm start
 ```
 
 Vous verrez :
+
 ```
 ✓ MongoDB connecté
 🚀 Server en écoute sur le port 5000
@@ -78,19 +79,25 @@ Vous verrez :
 ## 📡 API Endpoints
 
 ### **GET /api/dossiers**
+
 Récupérer tous les dossiers
+
 ```bash
 curl http://localhost:5000/api/dossiers
 ```
 
 ### **GET /api/dossiers/:id**
+
 Récupérer un dossier par ID
+
 ```bash
 curl http://localhost:5000/api/dossiers/123abc
 ```
 
 ### **POST /api/dossiers**
+
 Créer un nouveau dossier
+
 ```bash
 curl -X POST http://localhost:5000/api/dossiers \
   -H "Content-Type: application/json" \
@@ -98,7 +105,9 @@ curl -X POST http://localhost:5000/api/dossiers \
 ```
 
 ### **PUT /api/dossiers/:id**
+
 Mettre à jour un dossier
+
 ```bash
 curl -X PUT http://localhost:5000/api/dossiers/123abc \
   -H "Content-Type: application/json" \
@@ -106,13 +115,17 @@ curl -X PUT http://localhost:5000/api/dossiers/123abc \
 ```
 
 ### **DELETE /api/dossiers/:id**
+
 Supprimer un dossier
+
 ```bash
 curl -X DELETE http://localhost:5000/api/dossiers/123abc
 ```
 
 ### **GET /api/dossiers/stats/overview**
+
 Récupérer les statistiques
+
 ```bash
 curl http://localhost:5000/api/dossiers/stats/overview
 ```
@@ -218,6 +231,7 @@ REACT_APP_API_URL=https://audit-garantie-vw-api.herokuapp.com/api
 ```
 
 Ou en développement local :
+
 ```
 REACT_APP_API_URL=http://localhost:5000/api
 ```
@@ -295,6 +309,7 @@ PORT=5001
 ## 📞 Support
 
 Besoin d'aide ?
+
 - Lire les lire les erreurs en console
 - Vérifier les logs : `heroku logs --tail` ou console Render
 - Tester l'API avec cURL

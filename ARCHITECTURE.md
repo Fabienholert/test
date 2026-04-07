@@ -62,32 +62,46 @@ Fabienholert/
 ```javascript
 // Section A - Conformité
 const [conformanceData, setConformanceData] = useState({
-  reclamation: '',
-  signature: '',
-  dateEntree: '',
-  dateImpression: ''
-})
+  reclamation: "",
+  signature: "",
+  dateEntree: "",
+  dateImpression: "",
+});
 
 // Section B - Saisie
 const [captureData, setCaptureData] = useState({
-  orNumber: '', dissNumber: '', vin: '', model: '', km: '',
-  technicien: '', pointageAtelier: '', codeDommage: '', codeAvarie: '',
-  dissOpen: '', protocole: '', ppso: '', fichePedagogique: '', tpi: '',
-  dateDiag: '', sortiepromise: ''
-})
+  orNumber: "",
+  dissNumber: "",
+  vin: "",
+  model: "",
+  km: "",
+  technicien: "",
+  pointageAtelier: "",
+  codeDommage: "",
+  codeAvarie: "",
+  dissOpen: "",
+  protocole: "",
+  ppso: "",
+  fichePedagogique: "",
+  tpi: "",
+  dateDiag: "",
+  sortiepromise: "",
+});
 
 // Section C - Suivi
-const [records, setRecords] = useState([])
+const [records, setRecords] = useState([]);
 
 // Message de validation
-const [validationMessage, setValidationMessage] = useState(null)
+const [validationMessage, setValidationMessage] = useState(null);
 ```
 
 ## 🎯 Composants Détaillés
 
 ### 1️⃣ InputField.jsx
+
 **Rôle :** Champ texte réutilisable
 **Props :**
+
 - `label` : Étiquette du champ
 - `name` : Identifiant du formulaire
 - `value` : Valeur actuelle
@@ -99,8 +113,10 @@ const [validationMessage, setValidationMessage] = useState(null)
 **Utilisé par :** SectionCapture.jsx
 
 ### 2️⃣ SelectField.jsx
+
 **Rôle :** Sélecteur (dropdown) réutilisable
 **Props :**
+
 - `label` : Étiquette du sélecteur
 - `name` : Identifiant du formulaire
 - `value` : Valeur sélectionnée
@@ -112,8 +128,10 @@ const [validationMessage, setValidationMessage] = useState(null)
 **Utilisé par :** SectionConformance.jsx, SectionCapture.jsx
 
 ### 3️⃣ DateField.jsx
+
 **Rôle :** Sélecteur de date réutilisable
 **Props :**
+
 - `label` : Étiquette du champ
 - `name` : Identifiant du formulaire
 - `value` : Date au format YYYY-MM-DD
@@ -124,14 +142,17 @@ const [validationMessage, setValidationMessage] = useState(null)
 **Utilisé par :** SectionConformance.jsx, SectionCapture.jsx
 
 ### 4️⃣ SectionConformance.jsx
+
 **Rôle :** Validation stricte des critères de conformité
 **Logique :**
+
 - Validation immédiate (sans clic)
 - Affichage d'alertes en temps réel
 - Calcul des jours écoulés
 - Comparaison de dates
 
 **Règles :**
+
 ```javascript
 ❌ BLOCAGE SI :
   - reclamation === 'Non'
@@ -141,8 +162,10 @@ const [validationMessage, setValidationMessage] = useState(null)
 ```
 
 ### 5️⃣ SectionCapture.jsx
+
 **Rôle :** Formulaire de saisie complet
 **Sections :**
+
 1. Champs obligatoires (9 champs)
 2. Questions Oui/Non (5 champs)
 3. Dates (2 champs)
@@ -150,8 +173,10 @@ const [validationMessage, setValidationMessage] = useState(null)
 **Total :** 17 champs requis
 
 ### 6️⃣ SectionTracking.jsx
+
 **Rôle :** Tableau de suivi et statistiques
 **Colonnes :**
+
 1. OR # - Identifiant unique
 2. N°DISS - Numéro DISS
 3. VIN - Numéro VIN
@@ -165,8 +190,9 @@ const [validationMessage, setValidationMessage] = useState(null)
 11. Sortie Promise - Date formatée
 
 **Calcul "Docs OK" :**
+
 ```javascript
-Docs OK = 
+Docs OK =
   protocole === 'Oui' AND
   ppso === 'Oui' AND
   fichePedagogique !== 'Non' AND fichePedagogique !== '' AND
@@ -176,6 +202,7 @@ Docs OK =
 ## 🔐 Validation Complète
 
 ### Phase 1 : Validation de Conformité
+
 ```
 validateConfirmance() → conformanceData
   ├─ reclamation === 'Oui' ? ✓ : ✗ BLOCAGE
@@ -185,6 +212,7 @@ validateConfirmance() → conformanceData
 ```
 
 ### Phase 2 : Validation de Saisie
+
 ```
 validateCapture() → captureData
   ├─ orNumber !== '' ? ✓ : ✗ ERREUR
@@ -194,6 +222,7 @@ validateCapture() → captureData
 ```
 
 ### Phase 3 : Validation Globale
+
 ```
 validateAllData() = validateConfirmance() + validateCapture()
   ├─ Si erreurs → Afficher alerte détaillée → ARRÊT
@@ -205,18 +234,42 @@ validateAllData() = validateConfirmance() + validateCapture()
 ### Couches Personnalisées (@layer components)
 
 ```css
-.section-card { /* Cartes principales */ }
-.section-title { /* Titres de section */ }
-.form-group { /* Groupes de champs */ }
-.form-label { /* Étiquettes */ }
-.form-input { /* Champs texte */ }
-.form-select { /* Sélecteurs */ }
-.btn { /* Boutons */ }
-.btn-primary { /* Bouton vert "Valider" */ }
-.btn-secondary { /* Bouton gris "Réinitialiser" */ }
-.alert-error { /* Alerte rouge */ }
-.alert-warning { /* Alerte jaune */ }
-.alert-success { /* Alerte verte */ }
+.section-card {
+  /* Cartes principales */
+}
+.section-title {
+  /* Titres de section */
+}
+.form-group {
+  /* Groupes de champs */
+}
+.form-label {
+  /* Étiquettes */
+}
+.form-input {
+  /* Champs texte */
+}
+.form-select {
+  /* Sélecteurs */
+}
+.btn {
+  /* Boutons */
+}
+.btn-primary {
+  /* Bouton vert "Valider" */
+}
+.btn-secondary {
+  /* Bouton gris "Réinitialiser" */
+}
+.alert-error {
+  /* Alerte rouge */
+}
+.alert-warning {
+  /* Alerte jaune */
+}
+.alert-success {
+  /* Alerte verte */
+}
 ```
 
 ### Couleurs Personnalisées
@@ -267,6 +320,7 @@ extend: {
 ## 📱 Responsive Design
 
 Application entièrement responsive utilisant la grille Tailwind :
+
 - **Mobile :** 1 colonne
 - **Tablet (md):** 2 colonnes
 - **Desktop (lg):** 3 colonnes (Capture) / 2 colonnes (Conformance)
@@ -281,6 +335,7 @@ Application entièrement responsive utilisant la grille Tailwind :
 ## 🔌 Intégrations Possibles
 
 Le projet est conçu pour pouvoir facilement intégrer :
+
 - **API Backend :** Sauvegarder les données en BD
 - **LocalStorage :** Persistance en mémoire locale
 - **Export CSV/PDF :** Exporter le tableau de suivi

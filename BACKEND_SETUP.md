@@ -27,6 +27,7 @@ Guide rapide pour mettre en place le backend avec MongoDB et déployer.
    ```
    mongodb+srv://admin:PASSWORD@cluster.mongodb.net/audit-garantie-vw?retryWrites=true&w=majority
    ```
+
    - Remplacez `PASSWORD` par votre mot de passe
 
 ### **Option B : MongoDB Local (Si vous avez Homebrew)**
@@ -67,12 +68,14 @@ npm run dev
 ```
 
 Vous devriez voir :
+
 ```
 ✓ MongoDB connecté
 🚀 Server en écoute sur le port 5000
 ```
 
 **Testez l'API :**
+
 - Ouvrez http://localhost:5000/api/health
 - Vous devriez voir : `{"status":"OK","message":"Backend est en ligne"}`
 
@@ -112,6 +115,7 @@ npm run dev
 Allez sur http://localhost:5173
 
 **Testez :**
+
 1. Remplissez un formulaire
 2. Cliquez "Valider la Réception"
 3. Les données devraient être sauvegardées en base ✓
@@ -179,6 +183,7 @@ REACT_APP_API_URL=https://audit-garantie-vw-api.onrender.com/api
 ```
 
 Ou si Heroku :
+
 ```
 REACT_APP_API_URL=https://audit-garantie-vw-api.herokuapp.com/api
 ```
@@ -225,13 +230,13 @@ curl https://audit-garantie-vw-api.onrender.com/api/health
 
 ## 🆘 **Dépannage Rapide**
 
-| Problème | Solution |
-|----------|----------|
-| "MongoDB connecté" ne s'affiche pas | Vérifiez MONGODB_URI dans .env |
-| CORS Error en frontend | Vérifiez REACT_APP_API_URL |
-| Le backend ne redéploie pas | Poussez le code avec `git push` |
-| Les données ne sauvegardent pas | Vérifiez le terminal backend pour les erreurs |
-| Render dit "Deploy failed" | Vérifiez les logs dans Render dashboard |
+| Problème                            | Solution                                      |
+| ----------------------------------- | --------------------------------------------- |
+| "MongoDB connecté" ne s'affiche pas | Vérifiez MONGODB_URI dans .env                |
+| CORS Error en frontend              | Vérifiez REACT_APP_API_URL                    |
+| Le backend ne redéploie pas         | Poussez le code avec `git push`               |
+| Les données ne sauvegardent pas     | Vérifiez le terminal backend pour les erreurs |
+| Render dit "Deploy failed"          | Vérifiez les logs dans Render dashboard       |
 
 ---
 
@@ -240,11 +245,9 @@ curl https://audit-garantie-vw-api.onrender.com/api/health
 1. **Setup MongoDB** (5 min)
    - Créer un compte MongoDB Atlas
    - Copier la connection string
-   
 2. **Deploy Backend** (5 min)
    - Push sur Render/Heroku
    - Ajouter la variable MONGODB_URI
-   
 3. **Configurer Frontend** (2 min)
    - Ajouter .env avec la bonne URL API
    - Push sur GitHub

@@ -1,8 +1,9 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const authMiddleware = require('./middleware/auth');
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const authMiddleware = require("./middleware/auth");
+const { loadDamagesData } = require("./services/damagesService");
 
 const app = express();
 
@@ -11,27 +12,30 @@ app.use(cors());
 app.use(express.json());
 
 // Connexion MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-  serverSelectionTimeoutMS: 5000,
-})
-.then(() => {
-  console.log('✓ MongoDB connecté');
-})
-.catch((err) => {
-  console.error('✗ Erreur MongoDB:', err.message);
-  process.exit(1);
-});
+mongoose
+  .connect(process.env.MONGODB_URI, {
+    serverSelectionTimeoutMS: 5000,
+  })
+  .then(() => {
+    console.log("✓ MongoDB connecté");
+    loadDamagesData();
+  })
+  .catch((err) => {
+    console.error("✗ Erreur MongoDB:", err.message);
+    process.exit(1);
+  });
 
 // Routes publiques
-app.use('/api/auth', require('./routes/auth'));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/damages", require("./routes/damages"));
 
 // Health check (public)
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date() });
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK", timestamp: new Date() });
 });
 
 // Routes protégées par authentification
-app.use('/api/dossiers', authMiddleware, require('./routes/dossiers'));
+app.use("/api/dossiers", authMiddleware, require("./routes/dossiers"));
 
 // Démarrage du serveur
 const PORT = process.env.PORT || 5000;

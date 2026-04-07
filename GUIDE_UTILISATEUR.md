@@ -3,6 +3,7 @@
 ## 🎯 Objectif de l'Application
 
 Cette application permet aux réceptionnaires automobiles de :
+
 1. ✓ Vérifier la conformité OR des dossiers de garantie
 2. ✓ Saisir l'intégralité des données techniques du véhicule
 3. ✓ Suivre la conformité des dossiers dans un tableau centralisé
@@ -11,12 +12,14 @@ Cette application permet aux réceptionnaires automobiles de :
 ## 🚀 Démarrage Rapide
 
 ### Pour la première fois
+
 1. Ouvrez le dossier `/Users/fabienholert/Desktop/developpemen t/Fabienholert` dans VS Code
 2. Ouvrez un terminal : Ctrl+` (ou Terminal → New Terminal)
 3. Lancez : `npm install && npm run dev`
 4. L'app s'ouvrira automatiquement sur http://localhost:5173
 
 ### Pour les fois suivantes
+
 ```bash
 npm run dev
 ```
@@ -66,38 +69,38 @@ npm run dev
 
 #### Champs de Saisie Libre (9 champs)
 
-| Champ | Exemple | Note |
-|-------|---------|------|
-| OR # | OR-2024-001 | Identifiant unique OR |
-| N°DISS | DISS-1234 | Numéro dossier DISS |
-| VIN | WVWZZZ3CZ9E123456 | 17 caractères |
-| Modèle | Golf 8 TSI | Modèle du véhicule |
-| KM | 45000 | Kilométrage actuel |
-| Technicien | Jean Dupont | Nom du technicien |
-| Pointage Atelier | AT-001 | Code atelier |
-| Code Dommage | DMG-001 | Code sinistre |
-| Code Avarie | AVR-001 | Code défaut |
+| Champ            | Exemple           | Note                  |
+| ---------------- | ----------------- | --------------------- |
+| OR #             | OR-2024-001       | Identifiant unique OR |
+| N°DISS           | DISS-1234         | Numéro dossier DISS   |
+| VIN              | WVWZZZ3CZ9E123456 | 17 caractères         |
+| Modèle           | Golf 8 TSI        | Modèle du véhicule    |
+| KM               | 45000             | Kilométrage actuel    |
+| Technicien       | Jean Dupont       | Nom du technicien     |
+| Pointage Atelier | AT-001            | Code atelier          |
+| Code Dommage     | DMG-001           | Code sinistre         |
+| Code Avarie      | AVR-001           | Code défaut           |
 
 #### Questions Oui/Non (5 champs)
 
-| Champ | Options | Signification |
-|-------|---------|---------------|
-| DISS ouvert | Oui / Non | Le dossier DISS est-il ouvert ? |
+| Champ              | Options   | Signification                       |
+| ------------------ | --------- | ----------------------------------- |
+| DISS ouvert        | Oui / Non | Le dossier DISS est-il ouvert ?     |
 | Protocole en ligne | Oui / Non | Protocole d'accès en ligne activé ? |
-| PPSO | Oui / Non | Procédure post-SAV OK ? |
+| PPSO               | Oui / Non | Procédure post-SAV OK ?             |
 
 #### Identifiants Optionnels (2 champs)
 
-| Champ | Format | Notes |
-|-------|--------|-------|
+| Champ             | Format      | Notes                                |
+| ----------------- | ----------- | ------------------------------------ |
 | Fiche pédagogique | N° ou "Non" | Saisissez le numéro ou écrivez "Non" |
-| TPI | N° ou "Non" | Formation TPI ou "Non" |
+| TPI               | N° ou "Non" | Formation TPI ou "Non"               |
 
 #### Dates (2 champs)
 
-| Champ | Type | Exemple |
-|-------|------|---------|
-| Date du Diag | Date picker | 05/04/2024 |
+| Champ          | Type        | Exemple    |
+| -------------- | ----------- | ---------- |
+| Date du Diag   | Date picker | 05/04/2024 |
 | Sortie Promise | Date picker | 10/04/2024 |
 
 #### 💡 Conseils de Remplissage
@@ -116,6 +119,7 @@ npm run dev
 Le tableau affiche tous les dossiers validés avec :
 
 **Colonnes de Base :**
+
 - **OR #** : Identifiant unique (trier par défaut)
 - **N°DISS** : Numéro DISS
 - **VIN** : Numéro de châssis
@@ -124,11 +128,13 @@ Le tableau affiche tous les dossiers validés avec :
 - **Technicien** : Nom du technicien
 
 **Colonnes de Conformité :**
+
 - **Protocole** : Badge ✓ (vert) ou ✗ (rouge)
 - **PPSO** : Badge ✓ (vert) ou ✗ (rouge)
 - **Docs OK** : Colonne principale (verte si OK, rouge sinon)
 
 **Colonnes de Dates :**
+
 - **Diag** : Date formatée (JJ/MM/AAAA)
 - **Sortie Promise** : Date formatée (JJ/MM/AAAA)
 
@@ -149,12 +155,12 @@ Docs OK = ✗ NON si :
 
 #### Exemple
 
-| Scenario | Protocole | PPSO | Fiche | TPI | Docs OK |
-|----------|-----------|------|-------|-----|---------|
-| ✓ Tous OK | Oui | Oui | FP-001 | TPI-001 | ✓ OUI |
-| ✗ Fiche manquante | Oui | Oui | Non | TPI-001 | ✗ NON |
-| ✗ TPI manquant | Oui | Oui | FP-001 | Non | ✗ NON |
-| ✗ PPSO manquant | Oui | Non | FP-001 | TPI-001 | ✗ NON |
+| Scenario          | Protocole | PPSO | Fiche  | TPI     | Docs OK |
+| ----------------- | --------- | ---- | ------ | ------- | ------- |
+| ✓ Tous OK         | Oui       | Oui  | FP-001 | TPI-001 | ✓ OUI   |
+| ✗ Fiche manquante | Oui       | Oui  | Non    | TPI-001 | ✗ NON   |
+| ✗ TPI manquant    | Oui       | Oui  | FP-001 | Non     | ✗ NON   |
+| ✗ PPSO manquant   | Oui       | Non  | FP-001 | TPI-001 | ✗ NON   |
 
 ### Statistiques en Direct
 
@@ -173,12 +179,14 @@ En bas de la page :
 ### Bouton "Valider la Réception"
 
 **Action :**
+
 1. Vérifie tous les champs (Section A + B)
 2. Accumule les erreurs s'il y en a
 3. Affiche une alerte détaillée si erreurs
 4. **OU** ajoute le dossier au tableau et réinitialise
 
 **Cas d'Erreur - Message Exemple :**
+
 ```
 ❌ Erreur:
   - Réclamation client requise
@@ -187,6 +195,7 @@ En bas de la page :
 ```
 
 **Cas de Succès - Message :**
+
 ```
 ✅ Succès: Dossier validé et ajouté au tableau de suivi ✓
 (Le message disparaît après 3 secondes)
@@ -195,11 +204,13 @@ En bas de la page :
 ### Bouton "Réinitialiser"
 
 **Action :**
+
 - Vide TOUS les formulaires des Sections A et B
 - Efface tous les messages d'erreur
 - Garders les données du tableau (non supprimées)
 
 **Cas d'Usage :**
+
 - Commencer un nouveau dossier
 - Corriger une erreur d'entrée en masse
 - Recommencer une saisie
@@ -272,13 +283,16 @@ Aujourd'hui : 07/04/2024
 ## 📊 Interprétation des Statistiques
 
 ### Taux OK à 100% - ✓ Excellent
+
 Tous les dossiers ont protocole=Oui, PPSO=Oui, Fiche/TPI remplis
 
 ### Taux OK à 80% - ⚠️ À Améliorer
+
 3 dossiers sur 15 ont des documents manquants
 → Action requise : Vérifier les dossiers en rouge
 
 ### Taux OK à 0% - ❌ Critique
+
 Aucun dossier n'a une documentation complète
 → Action urgente : Revoir tous les dossiers
 
@@ -294,6 +308,7 @@ Aucun dossier n'a une documentation complète
 **Pour conserver les données :**
 
 Solutions à implémenter (à venir) :
+
 - Exporter en CSV
 - Sauvegarde en LocalStorage
 - Connexion à une base de données
@@ -301,19 +316,23 @@ Solutions à implémenter (à venir) :
 ## 🆘 Assistance et Dépannage
 
 ### L'application ne démarre pas
+
 1. Vérifiez que `npm run dev` est en cours
 2. Vérifiez que http://localhost:5173 est accessible
 3. Regardez les erreurs dans le terminal npm
 
 ### Un champ ne se réinitialise pas
+
 1. Cliquez sur "Réinitialiser"
 2. Si ça persiste, rafraîchissez la page (F5)
 
 ### Les dates s'affichent mal
+
 1. Assurez-vous d'utiliser le format locale FR
 2. Les dates sont formatées automatiquement en JJ/MM/AAAA
 
 ### Le tableau reste vide
+
 1. Avez-vous cliqué sur "Valider la Réception" ?
 2. Tous les champs sont-ils remplis ?
 3. Regardez les messages d'erreur en rouge
@@ -321,6 +340,7 @@ Solutions à implémenter (à venir) :
 ## 📞 Support et Questions
 
 En cas de problème :
+
 1. Vérifiez ce guide utilisateur (section débutants)
 2. Lisez les messages d'erreur détaillés
 3. Consultez le README.md pour l'architecture
