@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import SectionConformance from './components/SectionConformance'
 import SectionCapture from './components/SectionCapture'
 import SectionTracking from './components/SectionTracking'
 import { isAfter, differenceInDays, parseISO, startOfDay } from 'date-fns'
+import { dossierAPI } from './services/dossierAPI'
 
 export default function App() {
   // État pour la Section A (Conformité)
@@ -36,6 +37,33 @@ export default function App() {
   // État pour la Section C (Suivi)
   const [records, setRecords] = useState([])
   const [validationMessage, setValidationMessage] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [stats, setStats] = useState({ total: 0, docsOK: 0, docsMissing: 0, taux: 0 })
+
+  // Charger les dossiers au démarrage
+  useEffect(() => {
+    loadDossiers()
+  }, [])
+
+  const loadDossiers = async () => {
+    setLoading(true)
+    const data = await dossierAPI.getAll()
+    setRecords(data)
+    updateStats(data)
+    setLoading(false)
+  }
+
+  const updateStats = (dossiers) => {
+    const total = dossiers.length
+    const docsOK = dossiers.filter(d => d.docsOK).length
+    const taux = total > 0 ? Math.round((docsOK / total) * 100) : 0
+    setStats({
+      total,
+      docsOK,
+      docsMissing: total - docsOK,
+      taux
+    })
+  }
 
   // Handlers pour les changements de formulaire
   const handleConformanceChange = (e) => {
@@ -123,47 +151,59 @@ export default function App() {
       return
     }
 
-    // Si validation réussie, ajouter au tableau
+    // Si validation réussie, sauvegarder dans la base de données
     const newRecord = {
       ...conformanceData,
       ...captureData
     }
 
-    setRecords(prev => [...prev, newRecord])
-    setValidationMessage({
-      type: 'success',
-      text: 'Dossier validé et ajouté au tableau de suivi ✓'
-    })
+    setLoading(true)
+    dossierAPI.create(newRecord)
+      .then((savedRecord) => {
+        setRecords(prev => [...prev, savedRecord])
+        updateStats([...records, savedRecord])
+        setValidationMessage({
+          type: 'success',
+          text: 'Dossier validé et sauvegardé en base de données ✓'
+        })
 
-    // Réinitialiser les formulaires
-    setConformanceData({
-      reclamation: '',
-      signature: '',
-      dateEntree: '',
-      dateImpression: ''
-    })
+        // Réinitialiser les formulaires
+        setConformanceData({
+          reclamation: '',
+          signature: '',
+          dateEntree: '',
+          dateImpression: ''
+        })
 
-    setCaptureData({
-      orNumber: '',
-      dissNumber: '',
-      vin: '',
-      model: '',
-      km: '',
-      technicien: '',
-      pointageAtelier: '',
-      codeDommage: '',
-      codeAvarie: '',
-      dissOpen: '',
-      protocole: '',
-      ppso: '',
-      fichePedagogique: '',
-      tpi: '',
-      dateDiag: '',
-      sortiepromise: ''
-    })
+        setCaptureData({
+          orNumber: '',
+          dissNumber: '',
+          vin: '',
+          model: '',
+          km: '',
+          technicien: '',
+          pointageAtelier: '',
+          codeDommage: '',
+          codeAvarie: '',
+          dissOpen: '',
+          protocole: '',
+          ppso: '',
+          fichePedagogique: '',
+          tpi: '',
+          dateDiag: '',
+          sortiepromise: ''
+        })
 
-    // Effacer le message après 3 secondes
-    setTimeout(() => setValidationMessage(null), 3000)
+        // Effacer le message après 3 secondes
+        setTimeout(() => setValidationMessage(null), 3000)
+      })
+      .catch((error) => {
+        setValidationMessage({
+          type: 'error',
+          text: `Erreur de sauvegarde: ${error.message}`
+        })
+      })
+      .finally(() => setLoading(false))
   }
 
   const handleReset = () => {
