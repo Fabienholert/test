@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "type": "commonjs",
   "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js"

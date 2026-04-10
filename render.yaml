@@ -1,0 +1,17 @@
+# Déploiement Render : New → Blueprint → connecter ce dépôt.
+# Ensuite renseigner dans le dashboard : MONGODB_URI, JWT_SECRET, GMAIL_USER, GMAIL_PASSWORD
+services:
+  - type: web
+    name: audit-garantie-vw-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: https://testgarantie.netlify.app

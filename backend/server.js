@@ -7,14 +7,23 @@ const { loadDamagesData } = require("./services/damagesService");
 
 const app = express();
 
-// Middleware
-app.use(cors());
+app.set("trust proxy", 1);
+
+// CORS : nécessaire pour le front Netlify (preflight OPTIONS + POST)
+app.use(
+  cors({
+    origin: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 204,
+  }),
+);
 app.use(express.json());
 
-// Connexion MongoDB
+// Connexion MongoDB (timeout plus long : cold start Atlas / Render gratuit)
 mongoose
   .connect(process.env.MONGODB_URI, {
-    serverSelectionTimeoutMS: 5000,
+    serverSelectionTimeoutMS: 20000,
   })
   .then(() => {
     console.log("✓ MongoDB connecté");
