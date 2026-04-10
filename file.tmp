@@ -39,7 +39,6 @@ brew services start mongodb-community
 # mongodb://localhost:27017/audit-garantie-vw
 ```
 
----
 
 ## 🔧 **ÉTAPE 2 : Configurer le Backend Localement**
 
