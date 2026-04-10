@@ -64,6 +64,7 @@ git push -u origin main
 6. **IMPORTANT :** Allez dans "Site Settings" -> "Environment variables"
 7. Ajoutez la clé : `VITE_API_URL`
 8. Valeur : `https://votre-backend-url.onrender.com/api`
+8. Valeur : `https://audit-garantie-vw-api.onrender.com/api` (Vérifiez bien le HTTPS)
 9. Cliquez "Deploy site"
 10. Attendez 2-3 minutes...
 ```
