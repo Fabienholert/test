@@ -24,6 +24,7 @@ Guide rapide pour mettre en place le backend avec MongoDB et déployer.
 8. Retour à **"Clusters"** → **"Connect"** de votre cluster :
    - Choisissez **"Drivers"**
    - Copiez la **connection string** (ressemble à) :
+
    ```
    mongodb+srv://admin:PASSWORD@cluster.mongodb.net/audit-garantie-vw?retryWrites=true&w=majority
    ```

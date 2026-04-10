@@ -61,8 +61,11 @@ git push -u origin main
 3. Sélectionnez "GitHub"
 4. Recherchez "audit-garantie-vw"
 5. Cliquez "Install"
-6. Cliquez "Deploy site"
-7. Attendez 2-3 minutes...
+6. **IMPORTANT :** Allez dans "Site Settings" -> "Environment variables"
+7. Ajoutez la clé : `VITE_API_URL`
+8. Valeur : `https://votre-backend-url.onrender.com/api`
+9. Cliquez "Deploy site"
+10. Attendez 2-3 minutes...
 ```
 
 ### ✅ Étape 6 : Accéder à Votre Site
