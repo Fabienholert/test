@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -18,7 +20,7 @@ export default function VerifyEmailPage() {
 
       try {
         const response = await fetch(
-          `http://localhost:5001/api/auth/verify-email/${token}`,
+          `${API_URL}/auth/verify-email/${token}`,
         );
 
         if (!response.ok) {

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+
 export default function LoginPage({ onLoginSuccess }) {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
@@ -21,7 +23,7 @@ export default function LoginPage({ onLoginSuccess }) {
 
     try {
       console.log("📡 Envoi de la requête au serveur...");
-      const response = await fetch("http://localhost:5001/api/auth/login", {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -70,7 +72,7 @@ export default function LoginPage({ onLoginSuccess }) {
         throw new Error("Le mot de passe doit faire au moins 6 caractères");
       }
 
-      const response = await fetch("http://localhost:5001/api/auth/register", {
+      const response = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, nom, prenom }),
