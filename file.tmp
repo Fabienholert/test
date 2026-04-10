@@ -57,7 +57,6 @@ cp .env.example .env
 # MONGODB_URI=mongodb+srv://admin:PASSWORD@cluster.mongodb.net/audit-garantie-vw
 ```
 
----
 
 ## ▶️ **ÉTAPE 3 : Lancer le Serveur**
 
