@@ -156,7 +156,7 @@ localStorage.removeItem("user");
 ### Option 1 : Via l'API (à partir de l'app)
 
 ```bash
-curl -X POST http://localhost:5001/api/auth/register \
+curl -X POST http://localhost:5000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "nouveau@vw.com",
