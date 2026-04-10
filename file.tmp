@@ -233,7 +233,7 @@ curl https://audit-garantie-vw-api.onrender.com/api/health
 | Problème                            | Solution                                      |
 | ----------------------------------- | --------------------------------------------- |
 | "MongoDB connecté" ne s'affiche pas | Vérifiez MONGODB_URI dans .env                |
-| CORS Error en frontend              | Vérifiez VITE_API_URL                         |
+| CORS Error en frontend              | Vérifiez REACT_APP_API_URL                    |
 | Le backend ne redéploie pas         | Poussez le code avec `git push`               |
 | Les données ne sauvegardent pas     | Vérifiez le terminal backend pour les erreurs |
 | Render dit "Deploy failed"          | Vérifiez les logs dans Render dashboard       |
