@@ -1,5 +1,5 @@
 // API service pour communiquer avec le backend
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+import { API_URL } from "../apiBaseUrl";
 
 // Fonction helper pour obtenir le token
 const getToken = () => localStorage.getItem("token");

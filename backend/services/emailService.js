@@ -1,5 +1,7 @@
 const nodemailer = require("nodemailer");
 
+const DEFAULT_FRONTEND_URL = "https://testgarantie.netlify.app";
+
 // À configurer avec vos identifiants Gmail
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -16,7 +18,7 @@ const sendAdminApprovalEmail = async (
   userPrenom,
   approvalToken,
 ) => {
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const frontendUrl = process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL;
   const approvalLink = `${frontendUrl}/admin-approve?token=${approvalToken}`;
 
   const htmlContent = `
@@ -79,9 +81,7 @@ const sendAdminApprovalEmail = async (
       console.log("=".repeat(60));
       console.log("👤 UTILISATEUR À APPROUVER:", userEmail);
       console.log("🔗 LIEN D'APPROBATION (pour tester en local):");
-      console.log(
-        `   http://localhost:5173/admin-approve?token=${approvalToken}`,
-      );
+      console.log(`   ${frontendUrl}/admin-approve?token=${approvalToken}`);
       console.log("=".repeat(60) + "\n");
     }
 
@@ -93,7 +93,7 @@ const sendAdminApprovalEmail = async (
 };
 
 const sendVerificationEmail = async (email, verificationToken, prenom) => {
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const frontendUrl = process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL;
   const verificationLink = `${frontendUrl}/verify-email?token=${verificationToken}`;
 
   const htmlContent = `
@@ -149,9 +149,7 @@ const sendVerificationEmail = async (email, verificationToken, prenom) => {
       console.log("📧 EMAIL DE VÉRIFICATION ENVOYÉ À:", email);
       console.log("=".repeat(60));
       console.log("🔗 LIEN DE VÉRIFICATION (pour tester en local):");
-      console.log(
-        `   http://localhost:5174/verify-email?token=${verificationToken}`,
-      );
+      console.log(`   ${frontendUrl}/verify-email?token=${verificationToken}`);
       console.log("=".repeat(60) + "\n");
     }
 
