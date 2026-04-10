@@ -5,6 +5,12 @@
 [build.environment]
   NODE_VERSION = "20"
 
+[[redirects]]
+  from = "/api/*"
+  to = "https://audit-garantie-vw-api.onrender.com/api/:splat"
+  status = 200
+  force = true
+
 # SPA React Router : /login, rechargement, liens directs
 [[redirects]]
   from = "/*"
