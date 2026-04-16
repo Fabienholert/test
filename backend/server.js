@@ -3,7 +3,6 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const authMiddleware = require("./middleware/auth");
 const { loadDamagesData } = require("./services/damagesService");
 
 const app = express();
@@ -22,8 +21,7 @@ app.use(
 app.use(express.json());
 
 // Routes
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/users", authMiddleware, require("./routes/users"));
+app.use("/api/users", require("./routes/users"));
 app.use("/api/dossiers", require("./routes/dossiers")); // Protégé au niveau du routeur
 app.use("/api/damages", require("./routes/damages")); // Non protégé
 

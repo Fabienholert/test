@@ -1,22 +1,12 @@
 import { differenceInDays, isAfter, parseISO, startOfDay } from "date-fns";
 import { useEffect, useState } from "react";
-import {
-  Navigate,
-  Route,
-  BrowserRouter as Router,
-  Routes,
-} from "react-router-dom";
-import LoginPage from "./components/LoginPage";
 import SectionCapture from "./components/SectionCapture";
 import SectionConformance from "./components/SectionConformance";
 import SectionTracking from "./components/SectionTracking";
-import VerifyEmailPage from "./components/VerifyEmailPage";
 import { dossierAPI } from "./services/dossierAPI";
 
-function Dashboard() {
+export default function App() {
   // États du dashboard
-  const [user, setUser] = useState(null);
-  const [showLogout, setShowLogout] = useState(false);
   const [conformanceData, setConformanceData] = useState({
     reclamation: "",
     signature: "",
@@ -51,13 +41,9 @@ function Dashboard() {
     taux: 0,
   });
 
-  // Au chargement du dashboard, récupérer les données utilisateur
+  // Au chargement du dashboard, récupérer les données
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-      loadDossiers();
-    }
+    loadDossiers();
   }, []);
 
   const loadDossiers = async () => {
@@ -78,12 +64,6 @@ function Dashboard() {
       docsMissing: total - docsOK,
       taux,
     });
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/login";
   };
 
   const handleConformanceChange = (e) => {
@@ -110,14 +90,14 @@ function Dashboard() {
     if (!conformanceData.reclamation) {
       errors.conformanceReclamation = "Réclamation client requise";
     } else if (conformanceData.reclamation === "Non") {
-      errors.conformanceReclamation = 'BLOCAGE: Réclamation doit être "Oui"';
+      errors.conformanceReclamation = '''BLOCAGE: Réclamation doit être "Oui"''';
     }
 
     if (!conformanceData.signature) {
       errors.conformanceSignature = "Signature dossier requise";
     } else if (conformanceData.signature === "Non") {
       errors.conformanceSignature =
-        'BLOCAGE: Signature dossier doit être "Oui"';
+        '''BLOCAGE: Signature dossier doit être "Oui"''';
     }
 
     if (!conformanceData.dateEntree) {
@@ -284,14 +264,6 @@ function Dashboard() {
     }
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Chargement...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* En-tête */}
@@ -302,35 +274,6 @@ function Dashboard() {
             <p className="text-orange-100 mt-2">
               Gestion de Réception Garantie - Système de Conformité Stricte
             </p>
-          </div>
-
-          {/* Info utilisateur et déconnexion */}
-          <div className="text-right">
-            <p className="text-orange-100 text-sm">Connecté en tant que:</p>
-            <p className="text-lg font-semibold">
-              {user?.prenom} {user?.nom}
-            </p>
-            <p className="text-orange-200 text-xs">{user?.email}</p>
-
-            <div className="relative mt-2">
-              <button
-                onClick={() => setShowLogout(!showLogout)}
-                className="bg-orange-700 hover:bg-orange-800 text-white px-3 py-1 rounded text-sm transition"
-              >
-                ⚙️ Menu
-              </button>
-
-              {showLogout && (
-                <div className="absolute right-0 mt-1 bg-white text-orange-600 rounded shadow-lg z-10">
-                  <button
-                    onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 hover:bg-orange-50"
-                  >
-                    🚪 Se déconnecter
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </header>
@@ -464,61 +407,5 @@ function Dashboard() {
         <p>Audit Garantie VW © 2024 - Système de Gestion de Réception</p>
       </footer>
     </div>
-  );
-}
-
-export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    console.log(
-      "🔄 App.jsx - Vérification token au démarrage:",
-      token ? "✓ Trouvé" : "✗ Pas trouvé",
-    );
-    setIsAuthenticated(!!token);
-    setLoading(false);
-  }, []);
-
-  // Écouter les changements de token pour se re-authentifier
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const token = localStorage.getItem("token");
-      if (token && !isAuthenticated) {
-        console.log("🔐 Token détecté, re-authentification...");
-        setIsAuthenticated(true);
-      }
-    }, 500);
-    return () => clearInterval(interval);
-  }, [isAuthenticated]);
-
-  const handleLoginSuccess = (userData) => {
-    console.log("🎉 handleLoginSuccess appelé. Redirection au dashboard...");
-    setIsAuthenticated(true);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-gray-600 text-lg">Chargement...</p>
-      </div>
-    );
-  }
-
-  return (
-    <Router>
-      <Routes>
-        <Route
-          path="/login"
-          element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
-        />
-        <Route path="/verify-email" element={<VerifyEmailPage />} />
-        <Route
-          path="/"
-          element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
-        />
-      </Routes>
-    </Router>
   );
 }
