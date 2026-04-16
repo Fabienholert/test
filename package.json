@@ -1,0 +1,14 @@
+{
+  "name": "audit-garantie-vw-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node backend/server.js",
+    "build": "cd client && npm install && npm run build",
+    "heroku-postbuild": "npm run build" 
+  },
+  "dependencies": {},
+  "engines": {
+    "node": "18.x"
+  }
+}

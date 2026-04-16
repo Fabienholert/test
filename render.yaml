@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: audit-garantie-vw-reborn
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: "npm run build"
+    startCommand: "npm start"
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        fromDatabase:
+          name: audit-garantie-vw-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
