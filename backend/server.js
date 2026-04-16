@@ -1,53 +1,56 @@
-require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const path = require("path");
-const { loadDamagesData } = require("./services/damagesService");
+require('dotenv').config(); // Pour charger les variables d'environnement
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const path = require('path'); // Nécéssaire pour servir les fichiers statiques
+
+const dossierRoutes = require('./routes/dossiers');
+const userRoutes = require('./routes/users');
 
 const app = express();
 
-// Middlewares
-app.set("trust proxy", 1);
-app.use(cors({ origin: "*" }));
-app.use(express.json());
+// --- Middlewares ---
+app.use(cors());
+app.use(express.json()); 
 
-// ===== ROUTES API =====
-const apiRouter = express.Router();
+// --- Connexion à la base de données ---
+mongoose.connect(process.env.MONGO_URI, { 
+  useNewUrlParser: true, 
+  useUnifiedTopology: true 
+})
+.then(() => console.log('Connexion à MongoDB réussie !'))
+.catch(err => console.error('Erreur de connexion à MongoDB:', err));
 
-// Route de bilan de santé pour Render
-apiRouter.get('/health', (req, res) => {
+// --- Routes de l'API ---
+// Toutes les routes de l'API sont préfixées par /api
+app.use('/api/dossiers', dossierRoutes);
+app.use('/api/users', userRoutes);
+
+// Route pour le health check de Render
+app.get('/api/health', (req, res) => {
   res.status(200).send('OK');
 });
 
-apiRouter.use("/users", require("./routes/users"));
-apiRouter.use("/dossiers", require("./routes/dossiers"));
-apiRouter.use("/damages", require("./routes/damages"));
 
-// Préfixer toutes les routes API avec /api
-app.use("/api", apiRouter);
+// --- Servir le Frontend en Production ---
+// Cette section est cruciale pour le déploiement sur Render
 
-// ===== SERVICE DU FRONTEND REACT =====
-// Servir les fichiers statiques (CSS, JS, images) depuis le dossier dist
-app.use(express.static(path.join(__dirname, "../dist")));
+// 1. Définir le chemin vers le dossier de build du frontend
+// On remonte d'un niveau (de backend à la racine) puis on entre dans 'dist'
+const buildPath = path.join(__dirname, '..', 'dist');
 
-// Pour toute autre requête GET non-API, renvoyer l'index.html de React
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../dist", "index.html"));
+// 2. Servir les fichiers statiques (JS, CSS, images...)
+app.use(express.static(buildPath));
+
+// 3. Pour toutes les autres requêtes (GET), renvoyer le fichier index.html du frontend.
+// C'est ce qui permet à React Router de gérer la navigation.
+app.get('*_backend', (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
 });
 
-// ===== DÉMARRAGE DU SERVEUR =====
+
+// --- Démarrage du serveur ---
 const PORT = process.env.PORT || 5000;
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log("Connecté à MongoDB");
-    app.listen(PORT, () => {
-      console.log(`Serveur démarré sur le port ${PORT}`);
-      loadDamagesData();
-    });
-  })
-  .catch((err) => {
-    console.error("Erreur de connexion à MongoDB :", err);
-    process.exit(1);
-  });
+app.listen(PORT, () => {
+  console.log(`Serveur démarré sur le port ${PORT}`);
+});
