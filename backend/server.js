@@ -27,21 +27,11 @@ app.get('/api/health', (req, res) => {
 });
 
 // --- Servir le Frontend en Production ---
-
-// Correction : On construit un chemin plus robuste vers le dossier 'dist'
-// path.resolve() crée un chemin absolu
-// process.cwd() donne le répertoire de travail actuel (la racine du projet sur Render)
-const buildPath = path.resolve(process.cwd(), 'dist');
-
+const buildPath = path.resolve(__dirname, '..', 'dist');
 app.use(express.static(buildPath));
 
-// Pour toutes les autres requêtes, renvoyer l'index.html du frontend
 app.get('*', (req, res) => {
-  res.sendFile(path.join(buildPath, 'index.html'), (err) => {
-    if (err) {
-      res.status(500).send(err)
-    }
-  })
+  res.sendFile(path.join(buildPath, 'index.html'));
 });
 
 

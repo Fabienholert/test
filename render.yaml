@@ -4,11 +4,15 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-    buildCommand: |
-      npm install && npm run build
-      cd backend && npm install
+    buildCommand: "npm install && cd client && npm install && npm run build"
     startCommand: "node backend/server.js"
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: MONGO_URI
+        fromDatabase:
+          name: audit-garantie-vw-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
