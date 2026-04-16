@@ -13,28 +13,20 @@ app.set("trust proxy", 1);
 // Liste des origines autorisées
 const allowedOrigins = [
   "https://audit-garantie-vw.web.app", // Votre frontend de production
-  "https://test-89930331-b0789.web.app", // Ajout de l'URL de test Firebase
+  "https://test-89930331-b0789.web.app", // URL de test Firebase
   "http://localhost:3000",             // Votre environnement de développement local
   "http://localhost:5173"              // Environnement Vite par défaut
 ];
 
-// Configuration CORS
+// Configuration CORS simplifiée
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Autoriser les requêtes sans origine (comme les requêtes de serveur à serveur ou les outils comme Postman)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg = "La politique CORS pour ce site n'autorise pas l'accès depuis cette origine.";
-        return callback(new Error(msg), false);
-      }
-      return callback(null, true);
-    },
+    origin: allowedOrigins, // On passe directement le tableau
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true, // Important si vous utilisez des sessions ou des cookies
+    credentials: true,
     optionsSuccessStatus: 204,
-  }),
+  })
 );
 
 app.use(express.json());
