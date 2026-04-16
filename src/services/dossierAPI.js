@@ -1,5 +1,5 @@
 // API service pour communiquer avec le backend
-import { API_URL } from "../apiBaseUrl";
+import apiBaseUrl from "../apiBaseUrl";
 
 // Fonction helper pour obtenir le token
 const getToken = () => localStorage.getItem("token");
@@ -18,7 +18,7 @@ export const dossierAPI = {
   // Récupérer tous les dossiers
   getAll: async () => {
     try {
-      const response = await fetch(`${API_URL}/dossiers`, {
+      const response = await fetch(`${apiBaseUrl}/dossiers`, {
         headers: getHeaders(),
       });
       if (!response.ok) {
@@ -38,7 +38,7 @@ export const dossierAPI = {
   // Récupérer un dossier par ID
   getById: async (id) => {
     try {
-      const response = await fetch(`${API_URL}/dossiers/${id}`, {
+      const response = await fetch(`${apiBaseUrl}/dossiers/${id}`, {
         headers: getHeaders(),
       });
       if (!response.ok) throw new Error("Dossier non trouvé");
@@ -52,7 +52,7 @@ export const dossierAPI = {
   // Créer un nouveau dossier
   create: async (data) => {
     try {
-      const response = await fetch(`${API_URL}/dossiers`, {
+      const response = await fetch(`${apiBaseUrl}/dossiers`, {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify(data),
@@ -68,7 +68,7 @@ export const dossierAPI = {
   // Mettre à jour un dossier
   update: async (id, data) => {
     try {
-      const response = await fetch(`${API_URL}/dossiers/${id}`, {
+      const response = await fetch(`${apiBaseUrl}/dossiers/${id}`, {
         method: "PUT",
         headers: getHeaders(),
         body: JSON.stringify(data),
@@ -84,7 +84,7 @@ export const dossierAPI = {
   // Supprimer un dossier
   delete: async (id) => {
     try {
-      const response = await fetch(`${API_URL}/dossiers/${id}`, {
+      const response = await fetch(`${apiBaseUrl}/dossiers/${id}`, {
         method: "DELETE",
         headers: getHeaders(),
       });
@@ -99,7 +99,7 @@ export const dossierAPI = {
   // Récupérer les statistiques
   getStats: async () => {
     try {
-      const response = await fetch(`${API_URL}/dossiers/stats/overview`, {
+      const response = await fetch(`${apiBaseUrl}/dossiers/stats/overview`, {
         headers: getHeaders(),
       });
       if (!response.ok)

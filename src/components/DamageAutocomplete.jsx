@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { API_URL } from "../apiBaseUrl";
+import apiBaseUrl from "../apiBaseUrl";
 
 export default function DamageAutocomplete({ value, onSelect, onInput }) {
   const [suggestions, setSuggestions] = useState([]);
@@ -22,7 +22,7 @@ export default function DamageAutocomplete({ value, onSelect, onInput }) {
       setLoading(true);
       try {
         const response = await fetch(
-          `${API_URL}/damages/search?q=${encodeURIComponent(value)}`,
+          `${apiBaseUrl}/damages/search?q=${encodeURIComponent(value)}`,
         );
         const data = await response.json();
         setSuggestions(data);

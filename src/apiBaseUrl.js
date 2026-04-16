@@ -1,9 +1,9 @@
-const DEV_FALLBACK = "http://localhost:5001/api";
+// src/apiBaseUrl.js
 
-/**
- * Dev : VITE_API_URL ou backend local.
- * Prod : toujours `/api` (proxy Netlify → Render, voir netlify.toml). Pas d’appel cross-origin depuis le navigateur.
- */
-export const API_URL = import.meta.env.DEV
-  ? import.meta.env.VITE_API_URL || DEV_FALLBACK
-  : "/api";
+// Décommenter pour le développement local
+// const apiBaseUrl = "http://localhost:5000/api";
+
+// URL de l'API en production (déployée sur Render)
+const apiBaseUrl = "https://audit-garantie-vw-api.onrender.com/api";
+
+export default apiBaseUrl;

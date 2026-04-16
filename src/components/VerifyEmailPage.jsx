@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { API_URL } from "../apiBaseUrl";
+import apiBaseUrl from "../apiBaseUrl";
 
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
@@ -20,7 +20,7 @@ export default function VerifyEmailPage() {
 
       try {
         const response = await fetch(
-          `${API_URL}/auth/verify-email/${token}`,
+          `${apiBaseUrl}/auth/verify-email/${token}`,
         );
 
         if (!response.ok) {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_URL } from "../apiBaseUrl";
+import apiBaseUrl from "../apiBaseUrl";
 
 export default function LoginPage({ onLoginSuccess }) {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ export default function LoginPage({ onLoginSuccess }) {
 
     try {
       console.log("📡 Envoi de la requête au serveur...");
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch(`${apiBaseUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -71,7 +71,7 @@ export default function LoginPage({ onLoginSuccess }) {
         throw new Error("Le mot de passe doit faire au moins 6 caractères");
       }
 
-      const response = await fetch(`${API_URL}/auth/register`, {
+      const response = await fetch(`${apiBaseUrl}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, nom, prenom }),
