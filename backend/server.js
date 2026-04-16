@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -12,6 +13,7 @@ app.set("trust proxy", 1);
 // Liste des origines autorisées
 const allowedOrigins = [
   "https://audit-garantie-vw.web.app", // Votre frontend de production
+  "https://test-89930331-b0789.web.app", // Ajout de l'URL de test Firebase
   "http://localhost:3000",             // Votre environnement de développement local
   "http://localhost:5173"              // Environnement Vite par défaut
 ];
@@ -37,34 +39,30 @@ app.use(
 
 app.use(express.json());
 
-// Connexion MongoDB
+// Routes
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/users", authMiddleware, require("./routes/users"));
+app.use("/api/dossiers", require("./routes/dossiers")); // Protégé au niveau du routeur
+app.use("/api/damages", require("./routes/damages")); // Non protégé
+
+// Route de test
+app.get("/", (req, res) => {
+  res.send("API Audit Garantie VW - En cours d'exécution");
+});
+
+// Connexion à MongoDB et démarrage du serveur
+const PORT = process.env.PORT || 5000;
 mongoose
-  .connect(process.env.MONGODB_URI, {
-    serverSelectionTimeoutMS: 20000,
-  })
+  .connect(process.env.MONGODB_URI)
   .then(() => {
-    console.log("✓ MongoDB connecté");
-    loadDamagesData();
+    console.log("Connecté à MongoDB");
+    app.listen(PORT, () => {
+      console.log(`Serveur démarré sur le port ${PORT}`);
+      // Charger les données de défaillances au démarrage
+      loadDamagesData();
+    });
   })
   .catch((err) => {
-    console.error("✗ Erreur MongoDB:", err.message);
+    console.error("Erreur de connexion à MongoDB :", err);
     process.exit(1);
   });
-
-// Routes publiques
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/damages", require("./routes/damages"));
-
-// Health check (public)
-app.get("/api/health", (req, res) => {
-  res.json({ status: "OK", timestamp: new Date() });
-});
-
-// Routes protégées
-app.use("/api/dossiers", authMiddleware, require("./routes/dossiers"));
-
-// Démarrage du serveur
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server en écoute sur le port ${PORT}`);
-});
