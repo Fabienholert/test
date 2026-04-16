@@ -14,8 +14,6 @@ app.set("trust proxy", 1);
 const allowedOrigins = [
   "https://audit-garantie-vw.web.app", // Votre frontend de production
   "https://test-89930331-b0789.web.app", // URL de test Firebase
-  "http://localhost:3000",             // Votre environnement de développement local
-  "http://localhost:5173"              // Environnement Vite par défaut
 ];
 
 // Configuration CORS simplifiée
