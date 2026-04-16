@@ -3,43 +3,36 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const path = require("path"); // Importer le module path
+const path = require("path");
 const { loadDamagesData } = require("./services/damagesService");
 
 const app = express();
 
+// Middlewares
 app.set("trust proxy", 1);
-
-// Konfiguration CORS pour le débogage - AUTORISE TOUT
-app.use(
-  cors({
-    origin: "*", // ATTENTION: Temporaire pour le débogage
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 
-// Servir les fichiers statiques du front-end
-// __dirname est 'backend', donc on remonte d'un niveau pour trouver 'dist'
-app.use(express.static(path.join(__dirname, '../dist')));
+// ===== ROUTES API =====
+const apiRouter = express.Router();
+apiRouter.use("/users", require("./routes/users"));
+apiRouter.use("/dossiers", require("./routes/dossiers"));
+apiRouter.use("/damages", require("./routes/damages"));
 
+// Préfixer toutes les routes API avec /api
+app.use("/api", apiRouter);
 
-// Routes API
-app.use("/api/users", require("./routes/users"));
-app.use("/api/dossiers", require("./routes/dossiers")); // Protégé au niveau du routeur
-app.use("/api/damages", require("./routes/damages")); // Non protégé
+// ===== SERVICE DU FRONTEND REACT =====
+// Servir les fichiers statiques (CSS, JS, images) depuis le dossier dist
+app.use(express.static(path.join(__dirname, "../dist")));
 
-
-// La route "catch-all" pour servir l'application React
-// Doit être APRES les routes API
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist', 'index.html'));
+// Pour toute autre requête GET non-API, renvoyer l'index.html de React
+// Cela permet au routage côté client de React de fonctionner.
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../dist", "index.html"));
 });
 
-
-// Connexion à MongoDB et démarrage du serveur
+// ===== DÉMARRAGE DU SERVEUR =====
 const PORT = process.env.PORT || 5000;
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -47,7 +40,6 @@ mongoose
     console.log("Connecté à MongoDB");
     app.listen(PORT, () => {
       console.log(`Serveur démarré sur le port ${PORT}`);
-      // Charger les données de défaillances au démarrage
       loadDamagesData();
     });
   })
