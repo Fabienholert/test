@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node backend/server.js",
+    "install-client": "cd client && npm install",
     "build": "cd client && npm install && npm run build",
     "heroku-postbuild": "npm run build" 
   },
