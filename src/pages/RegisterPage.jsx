@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-// Idéalement, les appels API devraient être dans un service séparé (ex: src/services/userAPI.js)
-// Pour la simplicité, nous le faisons ici pour l'instant.
+const getApiBaseUrl = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return '/api';
+  }
+  return 'http://localhost:5000/api';
+};
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +17,7 @@ const RegisterPage = () => {
   });
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,8 +30,8 @@ const RegisterPage = () => {
     setMessage(null);
 
     try {
-      // Note: Assurez-vous que votre API est accessible
-      const response = await fetch('/api/users/register', {
+      const apiBaseUrl = getApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/users/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,10 +42,14 @@ const RegisterPage = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Une erreur est survenue.');
+        throw new Error(data.message || 'Erreur lors de l'inscription.');
       }
 
       setMessage({ type: 'success', text: 'Inscription réussie ! Vous pouvez maintenant vous connecter.' });
+      
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
 
     } catch (error) {
       setMessage({ type: 'error', text: error.message });
@@ -51,7 +61,7 @@ const RegisterPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Créer un compte</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Inscription</h2>
         
         {message && (
           <div className={`p-4 mb-4 text-sm rounded-lg ${message.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
@@ -61,20 +71,6 @@ const RegisterPage = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="prenom">
-              Prénom
-            </label>
-            <input
-              type="text"
-              name="prenom"
-              id="prenom"
-              value={formData.prenom}
-              onChange={handleChange}
-              className="input-field"
-              required
-            />
-          </div>
-          <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="nom">
               Nom
             </label>
@@ -83,6 +79,20 @@ const RegisterPage = () => {
               name="nom"
               id="nom"
               value={formData.nom}
+              onChange={handleChange}
+              className="input-field"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="prenom">
+              Prénom
+            </label>
+            <input
+              type="text"
+              name="prenom"
+              id="prenom"
+              value={formData.prenom}
               onChange={handleChange}
               className="input-field"
               required
@@ -118,8 +128,13 @@ const RegisterPage = () => {
           </div>
           <div className="flex items-center justify-between">
             <button type="submit" className="btn btn-primary w-full" disabled={loading}>
-              {loading ? 'Création...' : 'Créer le compte'}
+              {loading ? 'Inscription...' : 'S\'inscrire'}
             </button>
+          </div>
+          <div className="text-center mt-4">
+              <a href="/login" className="text-sm text-blue-500 hover:underline">
+                  Déjà un compte ? Connectez-vous.
+              </a>
           </div>
         </form>
       </div>

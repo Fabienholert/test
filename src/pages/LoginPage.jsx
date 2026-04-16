@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importer useNavigate
+import { useNavigate } from 'react-router-dom';
+
+const getApiBaseUrl = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return '/api';
+  }
+  return 'http://localhost:5000/api';
+};
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -8,7 +15,7 @@ const LoginPage = () => {
   });
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // Initialiser le hook de navigation
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,7 +28,8 @@ const LoginPage = () => {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/users/login', {
+      const apiBaseUrl = getApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/users/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -35,15 +43,14 @@ const LoginPage = () => {
         throw new Error(data.message || 'Email ou mot de passe incorrect.');
       }
 
-      // Sauvegarder le token dans le localStorage
       localStorage.setItem('token', data.token);
       
       setMessage({ type: 'success', text: 'Connexion réussie ! Redirection en cours...' });
 
-      // Rediriger vers la page d'accueil après un court délai
       setTimeout(() => {
         navigate('/');
-      }, 1000); // 1 seconde de délai pour voir le message
+        window.location.reload(); // Recharger la page pour que le header s'actualise
+      }, 1000);
 
     } catch (error) {
       setMessage({ type: 'error', text: error.message });

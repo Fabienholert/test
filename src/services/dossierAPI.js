@@ -1,17 +1,21 @@
-// API service pour communiquer avec le backend
-import apiBaseUrl from "../apiBaseUrl";
-
-// Fonction helper pour obtenir le token
-const getToken = () => localStorage.getItem("token");
-
-// Fonction helper pour obtenir les headers avec token
-const getHeaders = () => {
-  const token = getToken();
-  const headers = { "Content-Type": "application/json" };
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+const getApiBaseUrl = () => {
+  // Si l'application est en production (sur Render), on utilise une URL relative.
+  // Le serveur est sur le même domaine, donc /api pointera vers https://VOTRE_SITE.onrender.com/api
+  if (process.env.NODE_ENV === 'production') {
+    return '/api';
   }
-  return headers;
+  // Sinon, en développement, on utilise l'adresse locale.
+  return 'http://localhost:5000/api'; 
+};
+
+const apiBaseUrl = getApiBaseUrl();
+
+const getHeaders = () => {
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    ...(token && { Authorization: `Bearer ${token}` }),
+  };
 };
 
 export const dossierAPI = {
