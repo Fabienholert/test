@@ -7,7 +7,7 @@ const path = require('path');
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); 
 
 mongoose.connect(process.env.MONGO_URI, { 
   useNewUrlParser: true, 
@@ -32,10 +32,8 @@ const buildPath = path.resolve(__dirname, '..', 'client', 'build');
 app.use(express.static(buildPath));
 
 // Fallback pour toutes les autres routes non-API -> servir l'app React
-app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(buildPath, 'index.html'));
-  } 
+app.get(/^(?!\/api).*$/, (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
