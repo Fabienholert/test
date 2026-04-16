@@ -10,20 +10,12 @@ const app = express();
 
 app.set("trust proxy", 1);
 
-// Liste des origines autorisées
-const allowedOrigins = [
-  "https://audit-garantie-vw.web.app", // Votre frontend de production
-  "https://test-89930331-b0789.web.app", // URL de test Firebase
-];
-
-// Configuration CORS simplifiée
+// Konfiguration CORS pour le débogage - AUTORISE TOUT
 app.use(
   cors({
-    origin: allowedOrigins, // On passe directement le tableau
+    origin: "*", // ATTENTION: Temporaire pour le débogage
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-    optionsSuccessStatus: 204,
   })
 );
 
