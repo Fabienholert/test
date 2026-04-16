@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -33,7 +32,6 @@ app.use("/api", apiRouter);
 app.use(express.static(path.join(__dirname, "../dist")));
 
 // Pour toute autre requête GET non-API, renvoyer l'index.html de React
-// Cela permet au routage côté client de React de fonctionner.
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../dist", "index.html"));
 });
