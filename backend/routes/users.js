@@ -8,7 +8,8 @@ const jwt = require('jsonwebtoken');
 // POST /api/users/register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    // Accepter nom et prenom depuis le corps de la requête
+    const { email, password, nom, prenom } = req.body;
 
     // Vérifier si l'utilisateur existe déjà
     const existingUser = await User.findOne({ email });
@@ -16,21 +17,24 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Un utilisateur avec cet email existe déjà.' });
     }
 
-    // Hasher le mot de passe
+    // Hasher le mot de passe (Note: le pre-save hook dans le modèle s'en occupe déjà, mais le faire ici est aussi une sécurité)
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Créer un nouvel utilisateur
+    // Créer un nouvel utilisateur avec tous les champs requis
     const newUser = new User({
       email,
       password: hashedPassword,
+      nom, 
+      prenom,
     });
 
     const savedUser = await newUser.save();
     res.status(201).json({ message: 'Utilisateur créé avec succès.', userId: savedUser._id });
 
   } catch (error) {
-    res.status(500).json({ message: 'Erreur du serveur lors de la création de l'utilisateur.', error: error.message });
+    // Renvoyer un message d'erreur plus spécifique
+    res.status(500).json({ message: 'Erreur du serveur lors de la création de l\'utilisateur.', error: error.message });
   }
 });
 
@@ -46,14 +50,15 @@ router.post('/login', async (req, res) => {
     }
 
     // Vérifier le mot de passe
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Email ou mot de passe incorrect.' });
     }
 
     // Créer le token JWT
     const token = jwt.sign(
-      { id: user._id, isAdmin: user.isAdmin },
+      // Le payload du token doit correspondre à ce que votre frontend attend
+      { id: user._id, nom: user.nom, prenom: user.prenom },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -63,7 +68,8 @@ router.post('/login', async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        isAdmin: user.isAdmin,
+        nom: user.nom,
+        prenom: user.prenom,
       },
     });
 
