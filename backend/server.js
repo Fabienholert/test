@@ -15,6 +15,12 @@ app.use(express.json());
 
 // ===== ROUTES API =====
 const apiRouter = express.Router();
+
+// Route de bilan de santé pour Render
+apiRouter.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
 apiRouter.use("/users", require("./routes/users"));
 apiRouter.use("/dossiers", require("./routes/dossiers"));
 apiRouter.use("/damages", require("./routes/damages"));
