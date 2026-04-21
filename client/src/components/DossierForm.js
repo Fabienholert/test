@@ -90,15 +90,15 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         return;
       }
 
-      // La date d'impression ne peut pas être avant la date d'entrée
+      // La date d'impression ne peut pas être après la date d'entrée
       if (formData.dateEntree) {
         const entryDate = new Date(formData.dateEntree);
         // On compare les dates pures (sans les heures)
         entryDate.setHours(0, 0, 0, 0);
         printDate.setHours(0, 0, 0, 0);
         
-        if (printDate < entryDate) {
-          alert("Erreur : la date d'impression ne peut pas être antérieure à la date d'entrée.");
+        if (printDate > entryDate) {
+          alert("Erreur : la date d'impression ne peut pas être après la date d'entrée du véhicule.");
           return;
         }
       }
