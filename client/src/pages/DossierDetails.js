@@ -103,12 +103,20 @@ function DossierDetails() {
               <h3 style={{ margin: 0, color: 'white' }}>{dossier.kilometrage} km</h3>
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
-              <p className="form-label">Statut</p>
-              <h3 style={{ margin: 0, color: 'white' }}>{dossier.statut}</h3>
+              <p className="form-label">Date d'entrée</p>
+              <h3 style={{ margin: 0, color: 'white' }}>{dossier.dateEntree ? new Date(dossier.dateEntree).toLocaleDateString('fr-FR') : 'Non renseignée'}</h3>
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
-              <p className="form-label">Date de création</p>
+              <p className="form-label">Date du jour (Création)</p>
               <h3 style={{ margin: 0, color: 'white' }}>{new Date(dossier.dateCreation).toLocaleDateString('fr-FR')}</h3>
+            </div>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p className="form-label">Date d'impression</p>
+              <h3 style={{ margin: 0, color: 'white' }}>{dossier.dateImpression ? new Date(dossier.dateImpression).toLocaleDateString('fr-FR') : 'Non imprimé'}</h3>
+            </div>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p className="form-label">Statut</p>
+              <h3 style={{ margin: 0, color: 'white' }}>{dossier.statut}</h3>
             </div>
             
             {dossier.prixReparation && (

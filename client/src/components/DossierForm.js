@@ -1,4 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
+import { registerLocale } from "react-datepicker";
+import { fr } from 'date-fns/locale/fr';
+import "react-datepicker/dist/react-datepicker.css";
+
+// Enregistrer la locale française
+registerLocale('fr', fr);
 
 function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
   const [formData, setFormData] = useState({
@@ -7,9 +14,11 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     vehicule: '',
     immatriculation: '',
     kilometrage: '',
+    dateEntree: null,
+    dateImpression: null,
     descriptionPanne: '',
     prixReparation: '',
-    dateFinGarantie: '',
+    dateFinGarantie: null,
     statut: 'En attente'
   });
 
@@ -21,9 +30,11 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         vehicule: initialData.vehicule || '',
         immatriculation: initialData.immatriculation || '',
         kilometrage: initialData.kilometrage || '',
+        dateEntree: initialData.dateEntree ? new Date(initialData.dateEntree) : null,
+        dateImpression: initialData.dateImpression ? new Date(initialData.dateImpression) : null,
         descriptionPanne: initialData.descriptionPanne || '',
         prixReparation: initialData.prixReparation || '',
-        dateFinGarantie: initialData.dateFinGarantie ? new Date(initialData.dateFinGarantie).toISOString().split('T')[0] : '',
+        dateFinGarantie: initialData.dateFinGarantie ? new Date(initialData.dateFinGarantie) : null,
         statut: initialData.statut || 'En attente'
       });
     }
@@ -34,13 +45,81 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleDateChange = (name, date) => {
+    setFormData(prev => ({ ...prev, [name]: date }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // Fin de la journée pour la comparaison
+
+    if (formData.dateEntree) {
+      const entryDate = new Date(formData.dateEntree);
+      
+      const diffTime = today.getTime() - entryDate.getTime();
+      const diffDays = diffTime / (1000 * 3600 * 24);
+      
+      if (diffDays > 24) {
+        alert("Erreur : la date d'entrée est supérieure de 24 jours à la date du jour. Veuillez obligatoirement refaire le dossier.");
+        return;
+      }
+    }
+
+    if (formData.dateImpression) {
+      const printDate = new Date(formData.dateImpression);
+      
+      // La date d'impression ne peut pas être dans le futur
+      if (printDate > today) {
+        alert("Erreur : la date d'impression ne peut pas être une date future (après la date du jour).");
+        return;
+      }
+
+      // La date d'impression ne peut pas être avant la date d'entrée
+      if (formData.dateEntree) {
+        const entryDate = new Date(formData.dateEntree);
+        // On compare les dates pures (sans les heures)
+        entryDate.setHours(0, 0, 0, 0);
+        printDate.setHours(0, 0, 0, 0);
+        
+        if (printDate < entryDate) {
+          alert("Erreur : la date d'impression ne peut pas être antérieure à la date d'entrée.");
+          return;
+        }
+      }
+    }
+
+    // Format dates before submit if needed, or pass as Date objects
+    // Axios will stringify Date objects to ISO string
     onSubmit(formData);
   };
 
   return (
     <form onSubmit={handleSubmit} className="glass-panel" style={{ padding: '2rem' }}>
+      {/* Custom Styles for DatePicker to match the theme */}
+      <style>
+        {`
+          .react-datepicker-wrapper { width: 100%; }
+          .react-datepicker__input-container input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+          }
+          .react-datepicker__input-container input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+          }
+        `}
+      </style>
+
       <div className="grid grid-cols-2">
         <div className="form-group">
           <label className="form-label">Numéro de Dossier *</label>
@@ -52,7 +131,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
             onChange={handleChange} 
             placeholder="Ex: DOS-2023-001"
             required
-            disabled={!!initialData._id} // Disable if editing
+            disabled={!!initialData._id}
           />
         </div>
         
@@ -110,6 +189,29 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         </div>
 
         <div className="form-group">
+          <label className="form-label">Date d'entrée *</label>
+          <DatePicker
+            selected={formData.dateEntree}
+            onChange={(date) => handleDateChange('dateEntree', date)}
+            dateFormat="dd/MM/yyyy"
+            locale="fr"
+            placeholderText="Sélectionner une date"
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Date d'impression</label>
+          <DatePicker
+            selected={formData.dateImpression}
+            onChange={(date) => handleDateChange('dateImpression', date)}
+            dateFormat="dd/MM/yyyy"
+            locale="fr"
+            placeholderText="Sélectionner une date"
+          />
+        </div>
+
+        <div className="form-group">
           <label className="form-label">Statut</label>
           <select 
             name="statut" 
@@ -154,12 +256,12 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         
         <div className="form-group">
           <label className="form-label">Date limite de garantie</label>
-          <input 
-            type="date" 
-            name="dateFinGarantie"
-            className="form-control"
-            value={formData.dateFinGarantie} 
-            onChange={handleChange} 
+          <DatePicker
+            selected={formData.dateFinGarantie}
+            onChange={(date) => handleDateChange('dateFinGarantie', date)}
+            dateFormat="dd/MM/yyyy"
+            locale="fr"
+            placeholderText="Sélectionner une date"
           />
         </div>
       </div>
