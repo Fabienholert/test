@@ -33,6 +33,8 @@ router.post('/', async (req, res) => {
     vehicule: req.body.vehicule,
     immatriculation: req.body.immatriculation,
     kilometrage: req.body.kilometrage,
+    dateEntree: req.body.dateEntree,
+    dateImpression: req.body.dateImpression,
     descriptionPanne: req.body.descriptionPanne,
     prixReparation: req.body.prixReparation,
     dateFinGarantie: req.body.dateFinGarantie,
