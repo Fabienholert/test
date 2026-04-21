@@ -23,8 +23,8 @@ function DossierCard({ dossier }) {
       </div>
       <div style={{ marginBottom: '1rem' }}>
         <p style={{ margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ color: 'var(--text-muted)' }}>Client:</span> 
-          <span style={{ color: 'white' }}>{dossier.client}</span>
+          <span style={{ color: 'var(--text-muted)' }}>VIN:</span> 
+          <span style={{ color: 'white' }}>{dossier.vin}</span>
         </p>
         <p style={{ margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span style={{ color: 'var(--text-muted)' }}>Véhicule:</span> 

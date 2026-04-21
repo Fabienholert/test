@@ -87,8 +87,8 @@ function DossierDetails() {
         <div className="glass-panel" style={{ padding: '2rem' }}>
           <div className="grid grid-cols-2">
             <div style={{ marginBottom: '1.5rem' }}>
-              <p className="form-label">Client</p>
-              <h3 style={{ margin: 0, color: 'white' }}>{dossier.client}</h3>
+              <p className="form-label">VIN</p>
+              <h3 style={{ margin: 0, color: 'white' }}>{dossier.vin}</h3>
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
               <p className="form-label">Véhicule</p>

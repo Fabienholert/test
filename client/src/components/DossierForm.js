@@ -10,7 +10,7 @@ registerLocale('fr', fr);
 function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
   const [formData, setFormData] = useState({
     numero: '',
-    client: '',
+    vin: '',
     vehicule: '',
     immatriculation: '',
     kilometrage: '',
@@ -26,7 +26,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     if (initialData && Object.keys(initialData).length > 0) {
       setFormData({
         numero: initialData.numero || '',
-        client: initialData.client || '',
+        vin: initialData.vin || '',
         vehicule: initialData.vehicule || '',
         immatriculation: initialData.immatriculation || '',
         kilometrage: initialData.kilometrage || '',
@@ -186,15 +186,16 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         </div>
         
         <div className="form-group">
-          <label className="form-label">Client *</label>
+          <label className="form-label">VIN *</label>
           <input 
             type="text" 
-            name="client"
+            name="vin"
             className="form-control"
-            value={formData.client} 
+            value={formData.vin} 
             onChange={handleChange} 
-            placeholder="Nom complet du client"
+            placeholder="Numéro d'identification du véhicule"
             required
+            style={{ textTransform: 'uppercase' }}
           />
         </div>
         

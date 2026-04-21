@@ -29,7 +29,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   const dossier = new Dossier({
     numero: req.body.numero,
-    client: req.body.client,
+    vin: req.body.vin,
     vehicule: req.body.vehicule,
     immatriculation: req.body.immatriculation,
     kilometrage: req.body.kilometrage,
