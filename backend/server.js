@@ -9,13 +9,24 @@ const app = express();
 app.use(cors());
 app.use(express.json()); 
 
-mongoose.connect(process.env.MONGO_URI, { 
-  useNewUrlParser: true, 
-  useUnifiedTopology: true 
-})
-.then(() => console.log('Connexion à MongoDB réussie !'))
-.catch(err => console.error('Erreur de connexion à MongoDB:', err));
+const { MongoMemoryServer } = require('mongodb-memory-server');
 
+// ...
+async function connectDB() {
+  try {
+    let uri = process.env.MONGO_URI;
+    if (uri && uri.includes('localhost')) {
+      console.log('Démarrage de MongoDB en mémoire pour le développement local...');
+      const mongoServer = await MongoMemoryServer.create();
+      uri = mongoServer.getUri();
+    }
+    await mongoose.connect(uri);
+    console.log('Connexion à MongoDB réussie !');
+  } catch (err) {
+    console.error('Erreur de connexion à MongoDB:', err);
+  }
+}
+connectDB();
 // --- Routes API ---
 const dossiersRouter = require('./routes/dossiers');
 const usersRouter = require('./routes/users');
