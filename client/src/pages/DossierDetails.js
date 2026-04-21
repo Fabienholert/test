@@ -91,8 +91,12 @@ function DossierDetails() {
               <h3 style={{ margin: 0, color: 'white' }}>{dossier.vin}</h3>
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
-              <p className="form-label">Véhicule</p>
-              <h3 style={{ margin: 0, color: 'white' }}>{dossier.vehicule}</h3>
+              <p className="form-label">Marque</p>
+              <h3 style={{ margin: 0, color: 'white' }}>{dossier.marque}</h3>
+            </div>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p className="form-label">Modèle</p>
+              <h3 style={{ margin: 0, color: 'white' }}>{dossier.modele}</h3>
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
               <p className="form-label">Immatriculation</p>

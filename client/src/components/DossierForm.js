@@ -11,7 +11,8 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
   const [formData, setFormData] = useState({
     numero: '',
     vin: '',
-    vehicule: '',
+    marque: 'Volkswagen',
+    modele: '',
     immatriculation: '',
     kilometrage: '',
     dateEntree: null,
@@ -26,7 +27,8 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
       setFormData({
         numero: initialData.numero || '',
         vin: initialData.vin || '',
-        vehicule: initialData.vehicule || '',
+        marque: initialData.marque || 'Volkswagen',
+        modele: initialData.modele || '',
         immatriculation: initialData.immatriculation || '',
         kilometrage: initialData.kilometrage || '',
         dateEntree: initialData.dateEntree ? new Date(initialData.dateEntree) : null,
@@ -198,14 +200,31 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         </div>
         
         <div className="form-group">
-          <label className="form-label">Véhicule (Marque / Modèle) *</label>
+          <label className="form-label">Marque *</label>
+          <select 
+            name="marque" 
+            className="form-control"
+            value={formData.marque} 
+            onChange={handleChange}
+            required
+          >
+            <option value="Volkswagen">Volkswagen</option>
+            <option value="SEAT">SEAT</option>
+            <option value="CUPRA">CUPRA</option>
+            <option value="Škoda">Škoda</option>
+            <option value="Volkswagen Utilitaires">Volkswagen Utilitaires</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Modèle *</label>
           <input 
             type="text" 
-            name="vehicule"
+            name="modele"
             className="form-control"
-            value={formData.vehicule} 
+            value={formData.modele} 
             onChange={handleChange} 
-            placeholder="Ex: Peugeot 3008"
+            placeholder="Ex: Golf, Leon, Formentor..."
             required
           />
         </div>
