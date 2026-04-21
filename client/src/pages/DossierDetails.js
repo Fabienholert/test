@@ -128,7 +128,7 @@ function DossierDetails() {
             
             {dossier.dateFinGarantie && (
               <div style={{ marginBottom: '1.5rem' }}>
-                <p className="form-label">Fin de garantie</p>
+                <p className="form-label">Fin de validité</p>
                 <h3 style={{ margin: 0, color: 'white' }}>{new Date(dossier.dateFinGarantie).toLocaleDateString('fr-FR')}</h3>
               </div>
             )}

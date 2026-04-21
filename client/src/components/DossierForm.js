@@ -46,7 +46,18 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
   };
 
   const handleDateChange = (name, date) => {
-    setFormData(prev => ({ ...prev, [name]: date }));
+    setFormData(prev => {
+      const newData = { ...prev, [name]: date };
+      
+      // Calcul automatique de la date de fin de validité (+24 jours)
+      if (name === 'dateEntree' && date) {
+        const finValidite = new Date(date);
+        finValidite.setDate(finValidite.getDate() + 24);
+        newData.dateFinGarantie = finValidite;
+      }
+      
+      return newData;
+    });
   };
 
   const handleSubmit = (e) => {
@@ -55,14 +66,17 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     const today = new Date();
     today.setHours(23, 59, 59, 999); // Fin de la journée pour la comparaison
 
+    // Validation des 24 jours : on compare la date d'entrée par rapport à la date de création du dossier 
+    // (ou aujourd'hui s'il s'agit d'une création)
     if (formData.dateEntree) {
       const entryDate = new Date(formData.dateEntree);
+      const referenceDate = initialData.dateCreation ? new Date(initialData.dateCreation) : new Date();
       
-      const diffTime = today.getTime() - entryDate.getTime();
+      const diffTime = referenceDate.getTime() - entryDate.getTime();
       const diffDays = diffTime / (1000 * 3600 * 24);
       
       if (diffDays > 24) {
-        alert("Erreur : la date d'entrée est supérieure de 24 jours à la date du jour. Veuillez obligatoirement refaire le dossier.");
+        alert("Erreur : la date d'entrée est supérieure de 24 jours à la date de création. Veuillez obligatoirement refaire le dossier.");
         return;
       }
     }
@@ -189,6 +203,17 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         </div>
 
         <div className="form-group">
+          <label className="form-label">Date du jour</label>
+          <input 
+            type="text" 
+            className="form-control"
+            value={new Date().toLocaleDateString('fr-FR')} 
+            disabled
+            style={{ backgroundColor: 'rgba(0,0,0,0.4)', color: 'var(--text-muted)' }}
+          />
+        </div>
+
+        <div className="form-group">
           <label className="form-label">Date d'entrée *</label>
           <DatePicker
             selected={formData.dateEntree}
@@ -255,13 +280,13 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         </div>
         
         <div className="form-group">
-          <label className="form-label">Date limite de garantie</label>
+          <label className="form-label">Date de fin de validité (24j)</label>
           <DatePicker
             selected={formData.dateFinGarantie}
             onChange={(date) => handleDateChange('dateFinGarantie', date)}
             dateFormat="dd/MM/yyyy"
             locale="fr"
-            placeholderText="Sélectionner une date"
+            placeholderText="Calculée automatiquement"
           />
         </div>
       </div>
