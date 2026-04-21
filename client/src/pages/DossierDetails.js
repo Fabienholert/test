@@ -119,13 +119,6 @@ function DossierDetails() {
               <h3 style={{ margin: 0, color: 'white' }}>{dossier.statut}</h3>
             </div>
             
-            {dossier.prixReparation && (
-              <div style={{ marginBottom: '1.5rem' }}>
-                <p className="form-label">Montant de réparation</p>
-                <h3 style={{ margin: 0, color: 'var(--status-repare)' }}>{dossier.prixReparation} €</h3>
-              </div>
-            )}
-            
             {dossier.dateFinGarantie && (
               <div style={{ marginBottom: '1.5rem' }}>
                 <p className="form-label">Fin de validité</p>

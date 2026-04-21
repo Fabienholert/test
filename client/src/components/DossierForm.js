@@ -17,7 +17,6 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     dateEntree: null,
     dateImpression: null,
     descriptionPanne: '',
-    prixReparation: '',
     dateFinGarantie: null,
     statut: 'En attente'
   });
@@ -33,7 +32,6 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         dateEntree: initialData.dateEntree ? new Date(initialData.dateEntree) : null,
         dateImpression: initialData.dateImpression ? new Date(initialData.dateImpression) : null,
         descriptionPanne: initialData.descriptionPanne || '',
-        prixReparation: initialData.prixReparation || '',
         dateFinGarantie: initialData.dateFinGarantie ? new Date(initialData.dateFinGarantie) : null,
         statut: initialData.statut || 'En attente'
       });
@@ -303,19 +301,6 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
       </div>
 
       <div className="grid grid-cols-2">
-        <div className="form-group">
-          <label className="form-label">Montant de la réparation (€)</label>
-          <input 
-            type="number" 
-            name="prixReparation"
-            className="form-control"
-            value={formData.prixReparation} 
-            onChange={handleChange} 
-            placeholder="0.00"
-            step="0.01"
-          />
-        </div>
-        
         <div className="form-group">
           <label className="form-label">Date de fin de validité (24j)</label>
           <DatePicker

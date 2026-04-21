@@ -30,13 +30,13 @@ router.post('/', async (req, res) => {
   const dossier = new Dossier({
     numero: req.body.numero,
     vin: req.body.vin,
-    vehicule: req.body.vehicule,
+    marque: req.body.marque,
+    modele: req.body.modele,
     immatriculation: req.body.immatriculation,
     kilometrage: req.body.kilometrage,
     dateEntree: req.body.dateEntree,
     dateImpression: req.body.dateImpression,
     descriptionPanne: req.body.descriptionPanne,
-    prixReparation: req.body.prixReparation,
     dateFinGarantie: req.body.dateFinGarantie,
     statut: req.body.statut || 'En attente'
   });
