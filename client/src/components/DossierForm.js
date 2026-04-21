@@ -145,8 +145,25 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     onSubmit(formData);
   };
 
+  const getBrandColor = (marque) => {
+    if (marque === 'Volkswagen') return '#0066cc';
+    if (marque === 'SEAT' || marque === 'CUPRA') return '#e63946';
+    if (marque === 'Škoda') return '#4ba82e';
+    return '#6366f1';
+  };
+
+  const currentThemeColor = getBrandColor(formData.marque);
+
   return (
-    <form onSubmit={handleSubmit} className="glass-panel" style={{ padding: '2rem' }}>
+    <form 
+      onSubmit={handleSubmit} 
+      className="glass-panel" 
+      style={{ 
+        padding: '2rem',
+        '--primary': currentThemeColor,
+        '--primary-hover': currentThemeColor,
+      }}
+    >
       {/* Custom Styles for DatePicker to match the theme */}
       <style>
         {`
@@ -212,7 +229,6 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
             <option value="SEAT">SEAT</option>
             <option value="CUPRA">CUPRA</option>
             <option value="Škoda">Škoda</option>
-            <option value="Volkswagen Utilitaires">Volkswagen Utilitaires</option>
           </select>
         </div>
 

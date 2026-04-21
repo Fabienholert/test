@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const DossierSchema = new mongoose.Schema({
   numero: { type: String, required: true, unique: true },
   vin: { type: String, required: true },
-  marque: { type: String, required: true, enum: ['Volkswagen', 'SEAT', 'CUPRA', 'Škoda', 'Volkswagen Utilitaires'] },
+  marque: { type: String, required: true, enum: ['Volkswagen', 'SEAT', 'CUPRA', 'Škoda'] },
   modele: { type: String, required: true }, // ex: Golf, Leon, Formentor...
   immatriculation: { type: String, required: true }, // ex: AB-123-CD
   kilometrage: { type: Number, required: true },

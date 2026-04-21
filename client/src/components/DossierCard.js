@@ -13,8 +13,27 @@ const getStatusBadgeClass = (status) => {
 };
 
 function DossierCard({ dossier }) {
+  const getBrandColor = (marque) => {
+    if (marque === 'Volkswagen') return '#0066cc';
+    if (marque === 'SEAT' || marque === 'CUPRA') return '#e63946';
+    if (marque === 'Škoda') return '#4ba82e';
+    return '#6366f1';
+  };
+
+  const brandColor = getBrandColor(dossier.marque);
+
   return (
-    <Link to={`/dossiers/${dossier._id}`} className="glass-panel" style={{ display: 'block', padding: '1.5rem', transition: 'transform 0.2s, box-shadow 0.2s' }}>
+    <Link 
+      to={`/dossiers/${dossier._id}`} 
+      className="glass-panel" 
+      style={{ 
+        display: 'block', 
+        padding: '1.5rem', 
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        '--primary': brandColor,
+        '--shadow-glow': `0 0 20px ${brandColor}40` // Ajout d'une lueur aux couleurs de la marque au survol
+      }}
+    >
       <div className="flex justify-between items-center mb-4">
         <h3 style={{ margin: 0, color: 'white' }}>{dossier.numero}</h3>
         <span className={`badge ${getStatusBadgeClass(dossier.statut)}`}>

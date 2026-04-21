@@ -55,8 +55,17 @@ function DossierDetails() {
   if (loading) return <div className="text-center" style={{ marginTop: '3rem' }}>Chargement...</div>;
   if (!dossier) return null;
 
+  const getBrandColor = (marque) => {
+    if (marque === 'Volkswagen') return '#0066cc';
+    if (marque === 'SEAT' || marque === 'CUPRA') return '#e63946';
+    if (marque === 'Škoda') return '#4ba82e';
+    return '#6366f1';
+  };
+
+  const currentThemeColor = getBrandColor(dossier.marque);
+
   return (
-    <div>
+    <div style={{ '--primary': currentThemeColor, '--primary-hover': currentThemeColor }}>
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="btn btn-secondary" style={{ padding: '0.5rem 1rem' }}>
