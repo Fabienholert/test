@@ -46,6 +46,42 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
   };
 
   const handleDateChange = (name, date) => {
+    // Validation immédiate au clic sur le calendrier
+    if (name === 'dateImpression' && date) {
+      const printDate = new Date(date);
+      printDate.setHours(0, 0, 0, 0);
+      
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      
+      if (printDate > today) {
+        alert("Erreur : la date d'impression ne peut pas être une date future.");
+        return; // Bloque la sélection
+      }
+      
+      if (formData.dateEntree) {
+        const entryDate = new Date(formData.dateEntree);
+        entryDate.setHours(0, 0, 0, 0);
+        
+        if (printDate > entryDate) {
+          alert("Erreur : la date d'impression ne peut pas être après la date d'entrée du véhicule.");
+          return; // Bloque la sélection
+        }
+      }
+    }
+
+    if (name === 'dateEntree' && date && formData.dateImpression) {
+      const newEntryDate = new Date(date);
+      newEntryDate.setHours(0, 0, 0, 0);
+      const printDate = new Date(formData.dateImpression);
+      printDate.setHours(0, 0, 0, 0);
+      
+      if (printDate > newEntryDate) {
+        alert("Erreur : la date d'impression déjà saisie serait après cette nouvelle date d'entrée.");
+        return; // Bloque la sélection
+      }
+    }
+
     setFormData(prev => {
       const newData = { ...prev, [name]: date };
       
