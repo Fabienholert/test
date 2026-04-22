@@ -1,8 +1,12 @@
-const pdf = require('pdf-parse');
+const { PDFParse } = require('pdf-parse');
 
 async function extractDataFromPDF(buffer) {
-  const data = await pdf(buffer);
+  const parser = new PDFParse({ data: buffer });
+  const data = await parser.getText();
+  await parser.destroy();
   const text = data.text;
+  console.log('--- TEXTE EXTRAIT DU PDF (longueur:', text.length, ') ---');
+  console.log(text.substring(0, 500) + '...'); 
   
   const result = {};
   
@@ -31,6 +35,15 @@ async function extractDataFromPDF(buffer) {
   const dateMatch = text.match(/\d{2}\/\d{2}\/\d{4}/);
   if (dateMatch) result.dateEntree = dateMatch[0];
 
+  // Lettre Moteur
+  const moteurMatch = text.match(/moteur\s*:\s*([A-Z0-9]{3,4})/i) || text.match(/\b([A-Z]{3,4})\b(?=.*moteur)/i);
+  if (moteurMatch) result.lettreMoteur = moteurMatch[1].toUpperCase();
+
+  // Type
+  const typeMatch = text.match(/type\s*:\s*([A-Z0-9]{3})/i);
+  if (typeMatch) result.typeVehicule = typeMatch[1].toUpperCase();
+
+  console.log('--- RESULTAT ANALYSE ---', result);
   return result;
 }
 

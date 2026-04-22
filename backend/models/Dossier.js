@@ -7,6 +7,8 @@ const DossierSchema = new mongoose.Schema({
   modele: { type: String, required: true }, // ex: Golf, Leon, Formentor...
   immatriculation: { type: String, required: true }, // ex: AB-123-CD
   kilometrage: { type: Number, required: true },
+  lettreMoteur: { type: String },
+  typeVehicule: { type: String },
   dateEntree: { type: Date, required: true },
   dateImpression: { type: Date },
   isDISS: { type: Boolean, default: false },

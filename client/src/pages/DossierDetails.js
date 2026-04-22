@@ -71,7 +71,7 @@ function DossierDetails() {
           <button onClick={() => navigate(-1)} className="btn btn-secondary" style={{ padding: '0.5rem 1rem' }}>
             ← Retour
           </button>
-          <h1 style={{ margin: 0 }}>Dossier {dossier.numero}</h1>
+          <h1 style={{ margin: 0 }}>OR N° {dossier.numero}</h1>
         </div>
         {!isEditing && (
           <div className="flex gap-2">
@@ -96,7 +96,7 @@ function DossierDetails() {
         <div className="glass-panel" style={{ padding: '2rem' }}>
           <div className="grid grid-cols-2">
             <div style={{ marginBottom: '1.5rem' }}>
-              <p className="form-label">VIN</p>
+              <p className="form-label">Châssis</p>
               <h3 style={{ margin: 0, color: 'white' }}>{dossier.vin}</h3>
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
@@ -110,6 +110,14 @@ function DossierDetails() {
             <div style={{ marginBottom: '1.5rem' }}>
               <p className="form-label">Immatriculation</p>
               <h3 style={{ margin: 0, color: 'white', background: 'rgba(255,255,255,0.1)', display: 'inline-block', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>{dossier.immatriculation}</h3>
+            </div>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p className="form-label">Lettre Moteur</p>
+              <h3 style={{ margin: 0, color: 'white' }}>{dossier.lettreMoteur || 'N/A'}</h3>
+            </div>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p className="form-label">Type</p>
+              <h3 style={{ margin: 0, color: 'white' }}>{dossier.typeVehicule || 'N/A'}</h3>
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
               <p className="form-label">Kilométrage</p>

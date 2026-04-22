@@ -4,6 +4,7 @@ import { registerLocale } from "react-datepicker";
 import { fr } from 'date-fns/locale/fr';
 import "react-datepicker/dist/react-datepicker.css";
 import axios from 'axios';
+import { performClientSideOCR, parseDossierText } from '../utils/ocrClient';
 
 // Enregistrer la locale française
 registerLocale('fr', fr);
@@ -16,6 +17,8 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     vin: '',
     marque: 'Volkswagen',
     modele: '',
+    lettreMoteur: '',
+    typeVehicule: '',
     immatriculation: '',
     kilometrage: '',
     dateEntree: null,
@@ -45,6 +48,8 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         vin: initialData.vin || '',
         marque: initialData.marque || 'Volkswagen',
         modele: initialData.modele || '',
+        lettreMoteur: initialData.lettreMoteur || '',
+        typeVehicule: initialData.typeVehicule || '',
         immatriculation: initialData.immatriculation || '',
         kilometrage: initialData.kilometrage || '',
         dateEntree: initialData.dateEntree ? new Date(initialData.dateEntree) : null,
@@ -147,30 +152,52 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
       return;
     }
     
-    setStatusMessage(null);
+    setStatusMessage({ type: 'success', text: "Lancement de l'analyse OCR locale (peut prendre 10-20s)..." });
     
     setIsAnalyzing(true);
-    const formData = new FormData();
-    formData.append('documentPdfFile', documentPdfFile);
     
     try {
-      const res = await axios.post('/api/dossiers/analyze', formData);
-      const data = res.data;
-      
+      // Analyse dans le navigateur pour supporter les PDFs scannés
+      const text = await performClientSideOCR(documentPdfFile);
+      console.log('Texte extrait (Frontend):', text);
+      const data = parseDossierText(text);
+      console.log('Données extraites:', data);
+
       setFormData(prev => ({
         ...prev,
         vin: data.vin || prev.vin,
         immatriculation: data.immatriculation || prev.immatriculation,
         kilometrage: data.kilometrage || prev.kilometrage,
-        marque: data.marque || prev.marque,
+        lettreMoteur: data.lettreMoteur || prev.lettreMoteur,
+        typeVehicule: data.typeVehicule || prev.typeVehicule,
         dateEntree: data.dateEntree ? new Date(data.dateEntree.split('/').reverse().join('-')) : prev.dateEntree
       }));
       
-      setStatusMessage({ type: 'success', text: "Analyse terminée ! Les champs ont été pré-remplis avec succès." });
+      setStatusMessage({ type: 'success', text: "Analyse terminée ! Les informations ont été extraites du document scanné." });
     } catch (err) {
-      console.error(err);
-      const errorMsg = err.response?.data?.message || "Erreur lors de l'analyse du PDF. Assurez-vous qu'il s'agit d'un ordre de réparation lisible.";
-      setStatusMessage({ type: 'error', text: errorMsg });
+      console.error('Erreur OCR Frontend:', err);
+      setStatusMessage({ type: 'error', text: "L'analyse locale a échoué. Tentative via le serveur..." });
+      
+      // Fallback vers le serveur
+      const formData = new FormData();
+      formData.append('documentPdfFile', documentPdfFile);
+      
+      try {
+        const res = await axios.post('/api/dossiers/analyze', formData);
+        const data = res.data;
+        
+        setFormData(prev => ({
+          ...prev,
+          vin: data.vin || prev.vin,
+          immatriculation: data.immatriculation || prev.immatriculation,
+          kilometrage: data.kilometrage || prev.kilometrage,
+          dateEntree: data.dateEntree ? new Date(data.dateEntree.split('/').reverse().join('-')) : prev.dateEntree
+        }));
+        setStatusMessage({ type: 'success', text: "Analyse serveur terminée." });
+      } catch (serverErr) {
+        console.error(serverErr);
+        setStatusMessage({ type: 'error', text: "Toutes les méthodes d'analyse ont échoué. Veuillez remplir les champs manuellement." });
+      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -273,9 +300,6 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         '--primary-hover': currentThemeColor,
       }}
     >
-      {/* Custom Styles for DatePicker to match the theme */}
-    >
-      {/* Custom Styles for DatePicker to match the theme */}
       <style>
         {`
           .status-banner {
@@ -343,7 +367,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
 
       <div className="grid grid-cols-2">
         <div className="form-group">
-          <label className="form-label">Numéro de Dossier *</label>
+          <label className="form-label">OR N° *</label>
           <input 
             type="text" 
             name="numero"
@@ -357,7 +381,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         </div>
         
         <div className="form-group">
-          <label className="form-label">VIN *</label>
+          <label className="form-label">Châssis *</label>
           <input 
             type="text" 
             name="vin"
@@ -396,6 +420,32 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
             onChange={handleChange} 
             placeholder="Ex: Golf, Leon, Formentor..."
             required
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Lettre Moteur</label>
+          <input 
+            type="text" 
+            name="lettreMoteur"
+            className="form-control"
+            value={formData.lettreMoteur} 
+            onChange={handleChange} 
+            placeholder="Ex: CXXB, DADA..."
+            style={{ textTransform: 'uppercase' }}
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Type</label>
+          <input 
+            type="text" 
+            name="typeVehicule"
+            className="form-control"
+            value={formData.typeVehicule} 
+            onChange={handleChange} 
+            placeholder="Ex: 5G1, 5F1..."
+            style={{ textTransform: 'uppercase' }}
           />
         </div>
 
