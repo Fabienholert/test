@@ -40,13 +40,21 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST un nouveau dossier
-router.post('/', upload.single('fichePedagogiqueFile'), async (req, res) => {
+router.post('/', upload.fields([
+  { name: 'fichePedagogiqueFile', maxCount: 1 },
+  { name: 'documentPdfFile', maxCount: 1 }
+]), async (req, res) => {
   try {
     const dossierData = { ...req.body };
     
-    // Si un fichier a été uploadé, on enregistre son URL
-    if (req.file) {
-      dossierData.fichePedagogiqueUrl = `/uploads/${req.file.filename}`;
+    // Gestion des fichiers uploadés
+    if (req.files) {
+      if (req.files['fichePedagogiqueFile']) {
+        dossierData.fichePedagogiqueUrl = `/uploads/${req.files['fichePedagogiqueFile'][0].filename}`;
+      }
+      if (req.files['documentPdfFile']) {
+        dossierData.documentPdfUrl = `/uploads/${req.files['documentPdfFile'][0].filename}`;
+      }
     }
 
     const dossier = new Dossier(dossierData);
@@ -58,12 +66,20 @@ router.post('/', upload.single('fichePedagogiqueFile'), async (req, res) => {
 });
 
 // PUT mettre à jour un dossier
-router.put('/:id', upload.single('fichePedagogiqueFile'), async (req, res) => {
+router.put('/:id', upload.fields([
+  { name: 'fichePedagogiqueFile', maxCount: 1 },
+  { name: 'documentPdfFile', maxCount: 1 }
+]), async (req, res) => {
   try {
     const updateData = { ...req.body };
     
-    if (req.file) {
-      updateData.fichePedagogiqueUrl = `/uploads/${req.file.filename}`;
+    if (req.files) {
+      if (req.files['fichePedagogiqueFile']) {
+        updateData.fichePedagogiqueUrl = `/uploads/${req.files['fichePedagogiqueFile'][0].filename}`;
+      }
+      if (req.files['documentPdfFile']) {
+        updateData.documentPdfUrl = `/uploads/${req.files['documentPdfFile'][0].filename}`;
+      }
     }
 
     const updatedDossier = await Dossier.findByIdAndUpdate(

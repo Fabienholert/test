@@ -211,6 +211,25 @@ function DossierDetails() {
               <p className="form-label">Statut</p>
               <h3 style={{ margin: 0, color: 'white' }}>{dossier.statut}</h3>
             </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p className="form-label">Document PDF</p>
+              {dossier.documentPdfUrl ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <a 
+                    href={`${axios.defaults.baseURL || ''}${dossier.documentPdfUrl}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="btn btn-secondary"
+                    style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #ef4444', color: '#ef4444' }}
+                  >
+                    📄 Ouvrir le PDF Dossier
+                  </a>
+                </div>
+              ) : (
+                <span style={{ display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.85rem', background: 'rgba(255,255,255,0.08)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>Aucun PDF joint</span>
+              )}
+            </div>
             
             {dossier.dateFinGarantie && (
               <div style={{ marginBottom: '1.5rem' }}>

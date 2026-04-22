@@ -15,6 +15,7 @@ const DossierSchema = new mongoose.Schema({
   numTPI: { type: String },
   hasFichePedagogique: { type: Boolean, default: false },
   fichePedagogiqueUrl: { type: String },
+  documentPdfUrl: { type: String }, // Nouveau champ pour le PDF du dossier
   isPointageVerifie: { type: Boolean, default: false },
   nomTechnicien: { type: String },
   dommage: { type: String },

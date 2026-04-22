@@ -34,6 +34,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     statut: 'En attente'
   });
   const [ficheFile, setFicheFile] = useState(null);
+  const [documentPdfFile, setDocumentPdfFile] = useState(null);
 
   useEffect(() => {
     if (initialData && Object.keys(initialData).length > 0) {
@@ -60,6 +61,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         statut: initialData.statut || 'En attente'
       });
       setFicheFile(null);
+      setDocumentPdfFile(null);
     }
   }, [initialData]);
 
@@ -129,7 +131,12 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
   };
   
   const handleFileChange = (e) => {
-    setFicheFile(e.target.files[0]);
+    const { name, files } = e.target;
+    if (name === 'fichePedagogiqueFile') {
+      setFicheFile(files[0]);
+    } else if (name === 'documentPdfFile') {
+      setDocumentPdfFile(files[0]);
+    }
   };
 
   const handleLibelleChange = (e) => {
@@ -202,6 +209,9 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     
     if (ficheFile) {
       submitData.append('fichePedagogiqueFile', ficheFile);
+    }
+    if (documentPdfFile) {
+      submitData.append('documentPdfFile', documentPdfFile);
     }
 
     onSubmit(submitData);
@@ -519,6 +529,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
             }}>
               <input
                 type="file"
+                name="fichePedagogiqueFile"
                 onChange={handleFileChange}
                 style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}
                 accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
@@ -555,6 +566,28 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
               placeholder="Nom du technicien"
             />
           )}
+        </div>
+
+        {/* Document PDF Dossier */}
+        <div className="form-group">
+          <label className="form-label">Document PDF du Dossier</label>
+          <div className="file-upload-container" style={{ 
+            background: 'rgba(255,255,255,0.05)', 
+            padding: '0.75rem', 
+            borderRadius: 'var(--radius-md)',
+            border: '1px dashed var(--border-color)'
+          }}>
+            <input
+              type="file"
+              name="documentPdfFile"
+              onChange={handleFileChange}
+              style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}
+              accept=".pdf"
+            />
+            <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              {initialData.documentPdfUrl ? 'Remplacer le document PDF' : 'Joindre le document PDF officiel du dossier'}
+            </p>
+          </div>
         </div>
       </div>
 
