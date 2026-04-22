@@ -35,6 +35,8 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
   });
   const [ficheFile, setFicheFile] = useState(null);
   const [documentPdfFile, setDocumentPdfFile] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(null); // { type: 'success' | 'error', text: string }
 
   useEffect(() => {
     if (initialData && Object.keys(initialData).length > 0) {
@@ -138,6 +140,41 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
       setDocumentPdfFile(files[0]);
     }
   };
+  
+  const handleAnalyzePDF = async () => {
+    if (!documentPdfFile) {
+      setStatusMessage({ type: 'error', text: "Veuillez d'abord sélectionner un fichier PDF." });
+      return;
+    }
+    
+    setStatusMessage(null);
+    
+    setIsAnalyzing(true);
+    const formData = new FormData();
+    formData.append('documentPdfFile', documentPdfFile);
+    
+    try {
+      const res = await axios.post('/api/dossiers/analyze', formData);
+      const data = res.data;
+      
+      setFormData(prev => ({
+        ...prev,
+        vin: data.vin || prev.vin,
+        immatriculation: data.immatriculation || prev.immatriculation,
+        kilometrage: data.kilometrage || prev.kilometrage,
+        marque: data.marque || prev.marque,
+        dateEntree: data.dateEntree ? new Date(data.dateEntree.split('/').reverse().join('-')) : prev.dateEntree
+      }));
+      
+      setStatusMessage({ type: 'success', text: "Analyse terminée ! Les champs ont été pré-remplis avec succès." });
+    } catch (err) {
+      console.error(err);
+      const errorMsg = err.response?.data?.message || "Erreur lors de l'analyse du PDF. Assurez-vous qu'il s'agit d'un ordre de réparation lisible.";
+      setStatusMessage({ type: 'error', text: errorMsg });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   const handleLibelleChange = (e) => {
     const value = e.target.value;
@@ -237,8 +274,43 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
       }}
     >
       {/* Custom Styles for DatePicker to match the theme */}
+    >
+      {/* Custom Styles for DatePicker to match the theme */}
       <style>
         {`
+          .status-banner {
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideDown 0.3s ease-out;
+          }
+          @keyframes slideDown {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
+          .status-banner.success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+          }
+          .status-banner.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+          }
+          .close-btn {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            font-size: 1.2rem;
+            opacity: 0.7;
+          }
+          .close-btn:hover { opacity: 1; }
+          
           .react-datepicker-wrapper { width: 100%; }
           .react-datepicker__input-container input {
             width: 100%;
@@ -258,6 +330,16 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
           }
         `}
       </style>
+
+      {statusMessage && (
+        <div className={`status-banner ${statusMessage.type}`}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span>{statusMessage.type === 'success' ? '✅' : '❌'}</span>
+            <span>{statusMessage.text}</span>
+          </div>
+          <button type="button" className="close-btn" onClick={() => setStatusMessage(null)}>×</button>
+        </div>
+      )}
 
       <div className="grid grid-cols-2">
         <div className="form-group">
@@ -584,6 +666,17 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
               style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}
               accept=".pdf"
             />
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={handleAnalyzePDF}
+                disabled={isAnalyzing || !documentPdfFile}
+                style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
+              >
+                {isAnalyzing ? 'Analyse...' : '🔍 Analyser l\'ordre de réparation'}
+              </button>
+            </div>
             <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
               {initialData.documentPdfUrl ? 'Remplacer le document PDF' : 'Joindre le document PDF officiel du dossier'}
             </p>

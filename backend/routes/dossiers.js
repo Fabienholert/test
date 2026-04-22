@@ -3,6 +3,8 @@ const router = express.Router();
 const Dossier = require('../models/Dossier');
 const multer = require('multer');
 const path = require('path');
+const { extractDataFromPDF } = require('../utils/ocr');
+const fs = require('fs');
 
 // Configuration Multer pour les pièces jointes
 const storage = multer.diskStorage({
@@ -15,6 +17,26 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+// Route d'analyse de PDF
+router.post('/analyze', upload.single('documentPdfFile'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Aucun fichier PDF fourni' });
+    }
+
+    const buffer = fs.readFileSync(req.file.path);
+    const extractedData = await extractDataFromPDF(buffer);
+    
+    // Supprimer le fichier temporaire après analyse si nécessaire, 
+    // ou le laisser si on veut le garder. Ici on le garde car il sera utilisé pour le dossier.
+    
+    res.json(extractedData);
+  } catch (err) {
+    console.error('Erreur analyse PDF:', err);
+    res.status(500).json({ message: 'Erreur lors de l\'analyse du PDF' });
+  }
+});
 
 // --- CRUD Routes pour les dossiers ---
 
