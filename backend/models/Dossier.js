@@ -17,6 +17,8 @@ const DossierSchema = new mongoose.Schema({
   fichePedagogiqueUrl: { type: String },
   isPointageVerifie: { type: Boolean, default: false },
   nomTechnicien: { type: String },
+  dommage: { type: String },
+  libelleDommage: { type: String },
   descriptionPanne: { type: String },
   dateFinGarantie: { type: Date },
   statut: { 

@@ -58,6 +58,12 @@ function DossierCard({ dossier }) {
             {dossier.immatriculation}
           </span>
         </p>
+        {dossier.dommage && (
+          <p style={{ margin: '0.4rem 0 0 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ color: 'var(--text-muted)' }}>Dommage:</span>
+            <span style={{ color: 'var(--primary)', fontWeight: '600' }}>{dossier.dommage}</span>
+          </p>
+        )}
       </div>
 
       {/* Badges DISS / TPI */}

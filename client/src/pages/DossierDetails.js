@@ -183,6 +183,16 @@ function DossierDetails() {
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
+              <p className="form-label">Libellé Dommage</p>
+              <h3 style={{ margin: 0, color: 'white' }}>{dossier.libelleDommage || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Non renseigné</span>}</h3>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p className="form-label">Code Dommage</p>
+              <h3 style={{ margin: 0, color: 'var(--primary)', fontWeight: '700' }}>{dossier.dommage || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Non renseigné</span>}</h3>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
               <p className="form-label">Pointage Technicien</p>
               {dossier.isPointageVerifie ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>

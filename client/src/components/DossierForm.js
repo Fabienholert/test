@@ -3,11 +3,16 @@ import DatePicker from 'react-datepicker';
 import { registerLocale } from "react-datepicker";
 import { fr } from 'date-fns/locale/fr';
 import "react-datepicker/dist/react-datepicker.css";
+import axios from 'axios';
 
 // Enregistrer la locale française
 registerLocale('fr', fr);
 
 function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
+  const [damagesList, setDamagesList] = useState([]);
+  const [filteredDamages, setFilteredDamages] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
   const [formData, setFormData] = useState({
     numero: '',
     vin: '',
@@ -26,6 +31,8 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     hasFichePedagogique: false,
     isPointageVerifie: false,
     nomTechnicien: '',
+    dommage: '',
+    libelleDommage: '',
     statut: 'En attente'
   });
   const [ficheFile, setFicheFile] = useState(null);
@@ -50,11 +57,22 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         hasFichePedagogique: initialData.hasFichePedagogique || false,
         isPointageVerifie: initialData.isPointageVerifie || false,
         nomTechnicien: initialData.nomTechnicien || '',
+        dommage: initialData.dommage || '',
+        libelleDommage: initialData.libelleDommage || '',
         statut: initialData.statut || 'En attente'
       });
       setFicheFile(null);
     }
   }, [initialData]);
+
+  useEffect(() => {
+    axios.get('/api/references/damages')
+      .then(res => {
+        console.log('Dommages chargés:', res.data.length);
+        setDamagesList(res.data);
+      })
+      .catch(err => console.error('Erreur chargement dommages:', err));
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -114,6 +132,30 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
   
   const handleFileChange = (e) => {
     setFicheFile(e.target.files[0]);
+  };
+
+  const handleLibelleChange = (e) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, libelleDommage: value }));
+    
+    if (value.length >= 2) {
+      const filtered = damagesList.filter(d => 
+        d.label.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 10);
+      setFilteredDamages(filtered);
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const selectDamage = (d) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      libelleDommage: d.label,
+      dommage: d.code
+    }));
+    setShowSuggestions(false);
   };
 
   const handleSubmit = (e) => {
@@ -366,6 +408,67 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
               placeholder="N° DISS (ex: DISS-2024-001)"
             />
           )}
+        </div>
+
+        <div className="form-group" style={{ position: 'relative' }}>
+          <label className="form-label">Libellé Dommage</label>
+          <input 
+            type="text" 
+            name="libelleDommage"
+            className="form-control"
+            value={formData.libelleDommage} 
+            onChange={handleLibelleChange} 
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            onFocus={() => {
+              if (formData.libelleDommage && formData.libelleDommage.length >= 2) setShowSuggestions(true);
+            }}
+            placeholder="Rechercher un dommage..."
+            autoComplete="off"
+          />
+          {showSuggestions && filteredDamages.length > 0 && (
+            <div className="glass-panel" style={{ 
+              position: 'absolute', 
+              top: '100%', 
+              left: 0, 
+              right: 0, 
+              zIndex: 100, 
+              maxHeight: '200px', 
+              overflowY: 'auto',
+              marginTop: '5px',
+              padding: '0.5rem 0'
+            }}>
+              {filteredDamages.map((d, i) => (
+                <div 
+                  key={i} 
+                  onClick={() => selectDamage(d)}
+                  style={{ 
+                    padding: '0.5rem 1rem', 
+                    cursor: 'pointer',
+                    transition: 'background 0.2s',
+                    borderBottom: i < filteredDamages.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none'
+                  }}
+                  onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                >
+                  <div style={{ color: 'white', fontSize: '0.9rem' }}>{d.label}</div>
+                  <div style={{ color: 'var(--primary)', fontSize: '0.75rem', fontWeight: '600' }}>Code: {d.code}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Code Dommage</label>
+          <input 
+            type="text" 
+            name="dommage"
+            className="form-control"
+            value={formData.dommage} 
+            onChange={handleChange} 
+            placeholder="Code auto-rempli"
+            style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}
+          />
         </div>
 
         {/* TPI */}

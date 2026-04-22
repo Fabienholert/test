@@ -30,9 +30,11 @@ connectDB();
 // --- Routes API ---
 const dossiersRouter = require('./routes/dossiers');
 const usersRouter = require('./routes/users');
+const referencesRouter = require('./routes/references');
 
 app.use('/api/dossiers', dossiersRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/references', referencesRouter);
 
 app.get('/api/health', (req, res) => {
   res.status(200).send('OK');
