@@ -17,8 +17,10 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     kilometrage: '',
     dateEntree: null,
     dateImpression: null,
+    isDISS: false,
     numDISS: '',
     isTPI: false,
+    numTPI: '',
     descriptionPanne: '',
     dateFinGarantie: null,
     statut: 'En attente'
@@ -35,8 +37,10 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         kilometrage: initialData.kilometrage || '',
         dateEntree: initialData.dateEntree ? new Date(initialData.dateEntree) : null,
         dateImpression: initialData.dateImpression ? new Date(initialData.dateImpression) : null,
+        isDISS: initialData.isDISS || false,
         numDISS: initialData.numDISS || '',
         isTPI: initialData.isTPI || false,
+        numTPI: initialData.numTPI || '',
         descriptionPanne: initialData.descriptionPanne || '',
         dateFinGarantie: initialData.dateFinGarantie ? new Date(initialData.dateFinGarantie) : null,
         statut: initialData.statut || 'En attente'
@@ -310,21 +314,37 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
           />
         </div>
 
+        {/* DISS */}
         <div className="form-group">
-          <label className="form-label">N° DISS</label>
-          <input
-            type="text"
-            name="numDISS"
-            className="form-control"
-            value={formData.numDISS}
-            onChange={handleChange}
-            placeholder="Ex: DISS-2024-001"
-          />
+          <label className="form-label">DISS ?</label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none', marginBottom: formData.isDISS ? '0.75rem' : 0 }}>
+            <input
+              type="checkbox"
+              name="isDISS"
+              checked={formData.isDISS}
+              onChange={handleChange}
+              style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }}
+            />
+            <span style={{ color: formData.isDISS ? 'var(--primary)' : 'var(--text-muted)', fontWeight: formData.isDISS ? '600' : '400', transition: 'color 0.2s' }}>
+              {formData.isDISS ? 'Oui — DISS confirmé' : 'Non'}
+            </span>
+          </label>
+          {formData.isDISS && (
+            <input
+              type="text"
+              name="numDISS"
+              className="form-control"
+              value={formData.numDISS}
+              onChange={handleChange}
+              placeholder="N° DISS (ex: DISS-2024-001)"
+            />
+          )}
         </div>
 
-        <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <label className="form-label" style={{ margin: 0 }}>TPI ?</label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none' }}>
+        {/* TPI */}
+        <div className="form-group">
+          <label className="form-label">TPI ?</label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none', marginBottom: formData.isTPI ? '0.75rem' : 0 }}>
             <input
               type="checkbox"
               name="isTPI"
@@ -336,6 +356,16 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
               {formData.isTPI ? 'Oui — TPI confirmé' : 'Non'}
             </span>
           </label>
+          {formData.isTPI && (
+            <input
+              type="text"
+              name="numTPI"
+              className="form-control"
+              value={formData.numTPI}
+              onChange={handleChange}
+              placeholder="N° TPI (ex: TPI-2024-001)"
+            />
+          )}
         </div>
 
         <div className="form-group">

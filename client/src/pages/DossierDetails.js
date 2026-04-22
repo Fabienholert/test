@@ -128,6 +128,25 @@ function DossierDetails() {
               <h3 style={{ margin: 0, color: 'white' }}>{dossier.dateImpression ? new Date(dossier.dateImpression).toLocaleDateString('fr-FR') : 'Non imprimé'}</h3>
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
+              <p className="form-label">N° DISS</p>
+              <h3 style={{ margin: 0, color: 'white' }}>{dossier.numDISS || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Non renseigné</span>}</h3>
+            </div>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p className="form-label">TPI</p>
+              <span style={{
+                display: 'inline-block',
+                padding: '0.25rem 0.75rem',
+                borderRadius: '999px',
+                fontWeight: '600',
+                fontSize: '0.85rem',
+                background: dossier.isTPI ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.08)',
+                color: dossier.isTPI ? '#a5b4fc' : 'var(--text-muted)',
+                border: dossier.isTPI ? '1px solid #6366f1' : '1px solid var(--border-color)'
+              }}>
+                {dossier.isTPI ? '✔ TPI confirmé' : 'Non TPI'}
+              </span>
+            </div>
+            <div style={{ marginBottom: '1.5rem' }}>
               <p className="form-label">Statut</p>
               <h3 style={{ margin: 0, color: 'white' }}>{dossier.statut}</h3>
             </div>

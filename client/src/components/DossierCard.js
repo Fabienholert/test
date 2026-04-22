@@ -53,14 +53,23 @@ function DossierCard({ dossier }) {
           <span style={{ color: 'var(--text-muted)' }}>Immat:</span> 
           <span style={{ color: 'white', background: 'rgba(255,255,255,0.1)', padding: '0.1rem 0.4rem', borderRadius: '4px', letterSpacing: '1px' }}>{dossier.immatriculation}</span>
         </p>
+        {dossier.numDISS && (
+          <p style={{ margin: '0.5rem 0 0 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ color: 'var(--text-muted)' }}>DISS:</span>
+            <span style={{ color: 'white' }}>{dossier.numDISS}</span>
+          </p>
+        )}
       </div>
       <div className="flex justify-between items-center" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)', fontSize: '0.9rem' }}>
         <span style={{ color: 'var(--text-muted)' }}>
           {new Date(dossier.dateCreation).toLocaleDateString('fr-FR')}
         </span>
-        <span style={{ color: 'var(--primary)', fontWeight: '500' }}>
-          Voir détails →
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {dossier.isTPI && (
+            <span style={{ background: 'rgba(99,102,241,0.25)', color: '#a5b4fc', border: '1px solid #6366f1', borderRadius: '999px', padding: '0.1rem 0.5rem', fontSize: '0.75rem', fontWeight: '600' }}>TPI</span>
+          )}
+          <span style={{ color: 'var(--primary)', fontWeight: '500' }}>Voir détails →</span>
+        </div>
       </div>
     </Link>
   );
