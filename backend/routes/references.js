@@ -8,12 +8,15 @@ const fs = require('fs');
 let damagesCache = null;
 
 router.get('/damages', (req, res) => {
+  console.log('Requête reçue pour /api/references/damages');
   try {
     if (damagesCache) {
+      console.log('Retour des données depuis le cache');
       return res.json(damagesCache);
     }
 
     const filePath = path.join(__dirname, '..', 'uploads', 'Feuille de calcul sans titre.xlsx');
+    console.log('Recherche du fichier Excel à:', filePath);
     
     if (!fs.existsSync(filePath)) {
       console.error('Fichier non trouvé:', filePath);

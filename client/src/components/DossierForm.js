@@ -10,8 +10,6 @@ registerLocale('fr', fr);
 
 function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
   const [damagesList, setDamagesList] = useState([]);
-  const [filteredDamages, setFilteredDamages] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [formData, setFormData] = useState({
     numero: '',
@@ -138,24 +136,11 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     const value = e.target.value;
     setFormData(prev => ({ ...prev, libelleDommage: value }));
     
-    if (value.length >= 2) {
-      const filtered = damagesList.filter(d => 
-        d.label.toLowerCase().includes(value.toLowerCase())
-      ).slice(0, 10);
-      setFilteredDamages(filtered);
-      setShowSuggestions(true);
-    } else {
-      setShowSuggestions(false);
+    // Si on trouve un match exact dans la liste, on remplit le code automatiquement
+    const match = damagesList.find(d => d.label === value);
+    if (match) {
+      setFormData(prev => ({ ...prev, dommage: match.code }));
     }
-  };
-
-  const selectDamage = (d) => {
-    setFormData(prev => ({ 
-      ...prev, 
-      libelleDommage: d.label,
-      dommage: d.code
-    }));
-    setShowSuggestions(false);
   };
 
   const handleSubmit = (e) => {
@@ -224,7 +209,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
 
   const getBrandColor = (marque) => {
     if (marque === 'Volkswagen') return '#0066cc';
-    if (marque === 'SEAT' || marque === 'CUPRA') return '#e63946';
+    if (marque === 'SEAT' || marque === 'CUPRA') return '#f97316'; // Orange premium
     if (marque === 'Škoda') return '#4ba82e';
     return '#6366f1';
   };
@@ -418,44 +403,15 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
             className="form-control"
             value={formData.libelleDommage} 
             onChange={handleLibelleChange} 
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            onFocus={() => {
-              if (formData.libelleDommage && formData.libelleDommage.length >= 2) setShowSuggestions(true);
-            }}
-            placeholder="Rechercher un dommage..."
+            list="damages-list"
+            placeholder="Tapez pour rechercher un dommage..."
             autoComplete="off"
           />
-          {showSuggestions && filteredDamages.length > 0 && (
-            <div className="glass-panel" style={{ 
-              position: 'absolute', 
-              top: '100%', 
-              left: 0, 
-              right: 0, 
-              zIndex: 100, 
-              maxHeight: '200px', 
-              overflowY: 'auto',
-              marginTop: '5px',
-              padding: '0.5rem 0'
-            }}>
-              {filteredDamages.map((d, i) => (
-                <div 
-                  key={i} 
-                  onClick={() => selectDamage(d)}
-                  style={{ 
-                    padding: '0.5rem 1rem', 
-                    cursor: 'pointer',
-                    transition: 'background 0.2s',
-                    borderBottom: i < filteredDamages.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none'
-                  }}
-                  onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
-                  onMouseLeave={(e) => e.target.style.background = 'transparent'}
-                >
-                  <div style={{ color: 'white', fontSize: '0.9rem' }}>{d.label}</div>
-                  <div style={{ color: 'var(--primary)', fontSize: '0.75rem', fontWeight: '600' }}>Code: {d.code}</div>
-                </div>
-              ))}
-            </div>
-          )}
+          <datalist id="damages-list">
+            {damagesList.map((d, i) => (
+              <option key={i} value={d.label}>{d.code}</option>
+            ))}
+          </datalist>
         </div>
 
         <div className="form-group">

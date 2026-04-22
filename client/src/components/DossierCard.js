@@ -15,7 +15,7 @@ const getStatusBadgeClass = (status) => {
 function DossierCard({ dossier }) {
   const getBrandColor = (marque) => {
     if (marque === 'Volkswagen') return '#0066cc';
-    if (marque === 'SEAT' || marque === 'CUPRA') return '#e63946';
+    if (marque === 'SEAT' || marque === 'CUPRA') return '#f97316'; // Orange premium
     if (marque === 'Škoda') return '#4ba82e';
     return '#6366f1';
   };
