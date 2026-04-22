@@ -17,6 +17,8 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     kilometrage: '',
     dateEntree: null,
     dateImpression: null,
+    numDISS: '',
+    isTPI: false,
     descriptionPanne: '',
     dateFinGarantie: null,
     statut: 'En attente'
@@ -33,6 +35,8 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         kilometrage: initialData.kilometrage || '',
         dateEntree: initialData.dateEntree ? new Date(initialData.dateEntree) : null,
         dateImpression: initialData.dateImpression ? new Date(initialData.dateImpression) : null,
+        numDISS: initialData.numDISS || '',
+        isTPI: initialData.isTPI || false,
         descriptionPanne: initialData.descriptionPanne || '',
         dateFinGarantie: initialData.dateFinGarantie ? new Date(initialData.dateFinGarantie) : null,
         statut: initialData.statut || 'En attente'
@@ -41,8 +45,8 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
   }, [initialData]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const handleDateChange = (name, date) => {
@@ -304,6 +308,34 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
             locale="fr"
             placeholderText="Sélectionner une date"
           />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">N° DISS</label>
+          <input
+            type="text"
+            name="numDISS"
+            className="form-control"
+            value={formData.numDISS}
+            onChange={handleChange}
+            placeholder="Ex: DISS-2024-001"
+          />
+        </div>
+
+        <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <label className="form-label" style={{ margin: 0 }}>TPI ?</label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none' }}>
+            <input
+              type="checkbox"
+              name="isTPI"
+              checked={formData.isTPI}
+              onChange={handleChange}
+              style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }}
+            />
+            <span style={{ color: formData.isTPI ? 'var(--primary)' : 'var(--text-muted)', fontWeight: formData.isTPI ? '600' : '400', transition: 'color 0.2s' }}>
+              {formData.isTPI ? 'Oui — TPI confirmé' : 'Non'}
+            </span>
+          </label>
         </div>
 
         <div className="form-group">

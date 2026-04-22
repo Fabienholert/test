@@ -9,6 +9,8 @@ const DossierSchema = new mongoose.Schema({
   kilometrage: { type: Number, required: true },
   dateEntree: { type: Date, required: true },
   dateImpression: { type: Date },
+  numDISS: { type: String },
+  isTPI: { type: Boolean, default: false },
   descriptionPanne: { type: String },
   dateFinGarantie: { type: Date },
   statut: { 
