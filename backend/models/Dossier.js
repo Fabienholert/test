@@ -15,6 +15,8 @@ const DossierSchema = new mongoose.Schema({
   numTPI: { type: String },
   hasFichePedagogique: { type: Boolean, default: false },
   fichePedagogiqueUrl: { type: String },
+  isPointageVerifie: { type: Boolean, default: false },
+  nomTechnicien: { type: String },
   descriptionPanne: { type: String },
   dateFinGarantie: { type: Date },
   statut: { 

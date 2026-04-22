@@ -24,6 +24,8 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     descriptionPanne: '',
     dateFinGarantie: null,
     hasFichePedagogique: false,
+    isPointageVerifie: false,
+    nomTechnicien: '',
     statut: 'En attente'
   });
   const [ficheFile, setFicheFile] = useState(null);
@@ -46,6 +48,8 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         descriptionPanne: initialData.descriptionPanne || '',
         dateFinGarantie: initialData.dateFinGarantie ? new Date(initialData.dateFinGarantie) : null,
         hasFichePedagogique: initialData.hasFichePedagogique || false,
+        isPointageVerifie: initialData.isPointageVerifie || false,
+        nomTechnicien: initialData.nomTechnicien || '',
         statut: initialData.statut || 'En attente'
       });
       setFicheFile(null);
@@ -464,6 +468,33 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
                 {initialData.fichePedagogiqueUrl ? 'Remplacer le fichier actuel' : 'Joindre la fiche pédagogique (PDF, Image...)'}
               </p>
             </div>
+          )}
+        </div>
+
+        {/* Pointage Technicien */}
+        <div className="form-group">
+          <label className="form-label">Pointage Technicien ?</label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none', marginBottom: formData.isPointageVerifie ? '0.75rem' : 0 }}>
+            <input
+              type="checkbox"
+              name="isPointageVerifie"
+              checked={formData.isPointageVerifie}
+              onChange={handleChange}
+              style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }}
+            />
+            <span style={{ color: formData.isPointageVerifie ? 'var(--primary)' : 'var(--text-muted)', fontWeight: formData.isPointageVerifie ? '600' : '400', transition: 'color 0.2s' }}>
+              {formData.isPointageVerifie ? 'Pointage vérifié' : 'Non vérifié'}
+            </span>
+          </label>
+          {formData.isPointageVerifie && (
+            <input
+              type="text"
+              name="nomTechnicien"
+              className="form-control"
+              value={formData.nomTechnicien}
+              onChange={handleChange}
+              placeholder="Nom du technicien"
+            />
           )}
         </div>
       </div>

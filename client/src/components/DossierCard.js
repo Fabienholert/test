@@ -61,7 +61,7 @@ function DossierCard({ dossier }) {
       </div>
 
       {/* Badges DISS / TPI */}
-      {(dossier.isDISS || dossier.isTPI || dossier.hasFichePedagogique) && (
+      {(dossier.isDISS || dossier.isTPI || dossier.hasFichePedagogique || dossier.isPointageVerifie) && (
         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
           {dossier.isDISS && (
             <span style={{ background: 'rgba(234,179,8,0.2)', color: '#fbbf24', border: '1px solid #d97706', borderRadius: '999px', padding: '0.15rem 0.6rem', fontSize: '0.75rem', fontWeight: '600' }}>
@@ -73,13 +73,18 @@ function DossierCard({ dossier }) {
               TPI{dossier.numTPI ? ` • ${dossier.numTPI}` : ''}
             </span>
           )}
-          {dossier.hasFichePedagogique && (
-            <span style={{ background: 'rgba(16,185,129,0.2)', color: '#34d399', border: '1px solid #059669', borderRadius: '999px', padding: '0.15rem 0.6rem', fontSize: '0.75rem', fontWeight: '600' }}>
-              Fiche ✓
-            </span>
-          )}
-        </div>
-      )}
+            {dossier.hasFichePedagogique && (
+              <span style={{ background: 'rgba(16,185,129,0.2)', color: '#34d399', border: '1px solid #059669', borderRadius: '999px', padding: '0.15rem 0.6rem', fontSize: '0.75rem', fontWeight: '600' }}>
+                Fiche ✓
+              </span>
+            )}
+            {dossier.isPointageVerifie && (
+              <span style={{ background: 'rgba(59,130,246,0.2)', color: '#60a5fa', border: '1px solid #2563eb', borderRadius: '999px', padding: '0.15rem 0.6rem', fontSize: '0.75rem', fontWeight: '600' }}>
+                Pointage ✓
+              </span>
+            )}
+          </div>
+        )}
 
       {/* Pied de carte : date + lien */}
       <div className="flex justify-between items-center" style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)', fontSize: '0.9rem' }}>
