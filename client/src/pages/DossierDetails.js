@@ -157,6 +157,30 @@ function DossierDetails() {
                 <span style={{ display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.85rem', background: 'rgba(255,255,255,0.08)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>Non TPI</span>
               )}
             </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p className="form-label">Fiche Pédagogique</p>
+              {dossier.hasFichePedagogique ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <span style={{ display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '999px', fontWeight: '600', fontSize: '0.85rem', background: 'rgba(16,185,129,0.2)', color: '#34d399', border: '1px solid #059669' }}>
+                    ✔ Présente
+                  </span>
+                  {dossier.fichePedagogiqueUrl && (
+                    <a 
+                      href={`${axios.defaults.baseURL || ''}${dossier.fichePedagogiqueUrl}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="btn btn-secondary"
+                      style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                    >
+                      📎 Voir la pièce jointe
+                    </a>
+                  )}
+                </div>
+              ) : (
+                <span style={{ display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.85rem', background: 'rgba(255,255,255,0.08)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>Absente</span>
+              )}
+            </div>
             <div style={{ marginBottom: '1.5rem' }}>
               <p className="form-label">Statut</p>
               <h3 style={{ margin: 0, color: 'white' }}>{dossier.statut}</h3>

@@ -61,7 +61,7 @@ function DossierCard({ dossier }) {
       </div>
 
       {/* Badges DISS / TPI */}
-      {(dossier.isDISS || dossier.isTPI) && (
+      {(dossier.isDISS || dossier.isTPI || dossier.hasFichePedagogique) && (
         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
           {dossier.isDISS && (
             <span style={{ background: 'rgba(234,179,8,0.2)', color: '#fbbf24', border: '1px solid #d97706', borderRadius: '999px', padding: '0.15rem 0.6rem', fontSize: '0.75rem', fontWeight: '600' }}>
@@ -71,6 +71,11 @@ function DossierCard({ dossier }) {
           {dossier.isTPI && (
             <span style={{ background: 'rgba(99,102,241,0.25)', color: '#a5b4fc', border: '1px solid #6366f1', borderRadius: '999px', padding: '0.15rem 0.6rem', fontSize: '0.75rem', fontWeight: '600' }}>
               TPI{dossier.numTPI ? ` • ${dossier.numTPI}` : ''}
+            </span>
+          )}
+          {dossier.hasFichePedagogique && (
+            <span style={{ background: 'rgba(16,185,129,0.2)', color: '#34d399', border: '1px solid #059669', borderRadius: '999px', padding: '0.15rem 0.6rem', fontSize: '0.75rem', fontWeight: '600' }}>
+              Fiche ✓
             </span>
           )}
         </div>
