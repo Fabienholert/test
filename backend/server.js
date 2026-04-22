@@ -41,6 +41,7 @@ app.get('/api/health', (req, res) => {
 // --- Servir le Frontend en Production ---
 const buildPath = path.resolve(__dirname, '..', 'client', 'build');
 app.use(express.static(buildPath));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Fallback pour toutes les autres routes non-API -> servir l'app React
 app.get(/^(?!\/api).*$/, (req, res) => {

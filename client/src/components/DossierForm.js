@@ -23,8 +23,10 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     numTPI: '',
     descriptionPanne: '',
     dateFinGarantie: null,
+    hasFichePedagogique: false,
     statut: 'En attente'
   });
+  const [ficheFile, setFicheFile] = useState(null);
 
   useEffect(() => {
     if (initialData && Object.keys(initialData).length > 0) {
@@ -43,8 +45,10 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         numTPI: initialData.numTPI || '',
         descriptionPanne: initialData.descriptionPanne || '',
         dateFinGarantie: initialData.dateFinGarantie ? new Date(initialData.dateFinGarantie) : null,
+        hasFichePedagogique: initialData.hasFichePedagogique || false,
         statut: initialData.statut || 'En attente'
       });
+      setFicheFile(null);
     }
   }, [initialData]);
 
@@ -103,6 +107,10 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
       return newData;
     });
   };
+  
+  const handleFileChange = (e) => {
+    setFicheFile(e.target.files[0]);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -148,9 +156,24 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
       }
     }
 
-    // Format dates before submit if needed, or pass as Date objects
-    // Axios will stringify Date objects to ISO string
-    onSubmit(formData);
+    // Axios handles FormData correctly (sets multipart/form-data)
+    const submitData = new FormData();
+    Object.keys(formData).forEach(key => {
+      if (formData[key] !== null && formData[key] !== undefined) {
+        // Handle dates: send as ISO string
+        if (formData[key] instanceof Date) {
+          submitData.append(key, formData[key].toISOString());
+        } else {
+          submitData.append(key, formData[key]);
+        }
+      }
+    });
+    
+    if (ficheFile) {
+      submitData.append('fichePedagogiqueFile', ficheFile);
+    }
+
+    onSubmit(submitData);
   };
 
   const getBrandColor = (marque) => {
@@ -407,6 +430,41 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
             locale="fr"
             placeholderText="Calculée automatiquement"
           />
+        </div>
+
+        {/* Fiche Pédagogique */}
+        <div className="form-group">
+          <label className="form-label">Fiche Pédagogique ?</label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none', marginBottom: formData.hasFichePedagogique ? '0.75rem' : 0 }}>
+            <input
+              type="checkbox"
+              name="hasFichePedagogique"
+              checked={formData.hasFichePedagogique}
+              onChange={handleChange}
+              style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }}
+            />
+            <span style={{ color: formData.hasFichePedagogique ? 'var(--primary)' : 'var(--text-muted)', fontWeight: formData.hasFichePedagogique ? '600' : '400', transition: 'color 0.2s' }}>
+              {formData.hasFichePedagogique ? 'Oui — Fiche présente' : 'Non'}
+            </span>
+          </label>
+          {formData.hasFichePedagogique && (
+            <div className="file-upload-container" style={{ 
+              background: 'rgba(255,255,255,0.05)', 
+              padding: '0.75rem', 
+              borderRadius: 'var(--radius-md)',
+              border: '1px dashed var(--border-color)'
+            }}>
+              <input
+                type="file"
+                onChange={handleFileChange}
+                style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+              />
+              <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {initialData.fichePedagogiqueUrl ? 'Remplacer le fichier actuel' : 'Joindre la fiche pédagogique (PDF, Image...)'}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

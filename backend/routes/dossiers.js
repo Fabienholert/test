@@ -1,6 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const Dossier = require('../models/Dossier');
+const multer = require('multer');
+const path = require('path');
+
+// Configuration Multer pour les pièces jointes
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+
+const upload = multer({ storage: storage });
 
 // --- CRUD Routes pour les dossiers ---
 
@@ -26,21 +40,16 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST un nouveau dossier
-router.post('/', async (req, res) => {
-  const dossier = new Dossier({
-    numero: req.body.numero,
-    vin: req.body.vin,
-    marque: req.body.marque,
-    modele: req.body.modele,
-    immatriculation: req.body.immatriculation,
-    kilometrage: req.body.kilometrage,
-    dateEntree: req.body.dateEntree,
-    dateImpression: req.body.dateImpression,
-    descriptionPanne: req.body.descriptionPanne,
-    dateFinGarantie: req.body.dateFinGarantie,
-    statut: req.body.statut || 'En attente'
-  });
+router.post('/', upload.single('fichePedagogiqueFile'), async (req, res) => {
   try {
+    const dossierData = { ...req.body };
+    
+    // Si un fichier a été uploadé, on enregistre son URL
+    if (req.file) {
+      dossierData.fichePedagogiqueUrl = `/uploads/${req.file.filename}`;
+    }
+
+    const dossier = new Dossier(dossierData);
     const newDossier = await dossier.save();
     res.status(201).json(newDossier);
   } catch (err) {
@@ -49,13 +58,20 @@ router.post('/', async (req, res) => {
 });
 
 // PUT mettre à jour un dossier
-router.put('/:id', async (req, res) => {
+router.put('/:id', upload.single('fichePedagogiqueFile'), async (req, res) => {
   try {
+    const updateData = { ...req.body };
+    
+    if (req.file) {
+      updateData.fichePedagogiqueUrl = `/uploads/${req.file.filename}`;
+    }
+
     const updatedDossier = await Dossier.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
+    
     if (!updatedDossier) return res.status(404).json({ message: 'Dossier non trouvé' });
     res.json(updatedDossier);
   } catch (err) {
