@@ -13,6 +13,8 @@ const DossierSchema = new mongoose.Schema({
   numDISS: { type: String },
   isTPI: { type: Boolean, default: false },
   numTPI: { type: String },
+  hasFichePedagogique: { type: Boolean, default: false },
+  fichePedagogiqueUrl: { type: String },
   descriptionPanne: { type: String },
   dateFinGarantie: { type: Date },
   statut: { 

@@ -128,23 +128,34 @@ function DossierDetails() {
               <h3 style={{ margin: 0, color: 'white' }}>{dossier.dateImpression ? new Date(dossier.dateImpression).toLocaleDateString('fr-FR') : 'Non imprimé'}</h3>
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
-              <p className="form-label">N° DISS</p>
-              <h3 style={{ margin: 0, color: 'white' }}>{dossier.numDISS || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Non renseigné</span>}</h3>
+              <p className="form-label">DISS</p>
+              {dossier.isDISS ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <span style={{ display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '999px', fontWeight: '600', fontSize: '0.85rem', background: 'rgba(234,179,8,0.2)', color: '#fbbf24', border: '1px solid #d97706' }}>
+                    ✔ DISS confirmé
+                  </span>
+                  {dossier.numDISS && (
+                    <span style={{ color: 'white', fontWeight: '500' }}>N° {dossier.numDISS}</span>
+                  )}
+                </div>
+              ) : (
+                <span style={{ display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.85rem', background: 'rgba(255,255,255,0.08)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>Non DISS</span>
+              )}
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
               <p className="form-label">TPI</p>
-              <span style={{
-                display: 'inline-block',
-                padding: '0.25rem 0.75rem',
-                borderRadius: '999px',
-                fontWeight: '600',
-                fontSize: '0.85rem',
-                background: dossier.isTPI ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.08)',
-                color: dossier.isTPI ? '#a5b4fc' : 'var(--text-muted)',
-                border: dossier.isTPI ? '1px solid #6366f1' : '1px solid var(--border-color)'
-              }}>
-                {dossier.isTPI ? '✔ TPI confirmé' : 'Non TPI'}
-              </span>
+              {dossier.isTPI ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <span style={{ display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '999px', fontWeight: '600', fontSize: '0.85rem', background: 'rgba(99,102,241,0.25)', color: '#a5b4fc', border: '1px solid #6366f1' }}>
+                    ✔ TPI confirmé
+                  </span>
+                  {dossier.numTPI && (
+                    <span style={{ color: 'white', fontWeight: '500' }}>N° {dossier.numTPI}</span>
+                  )}
+                </div>
+              ) : (
+                <span style={{ display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.85rem', background: 'rgba(255,255,255,0.08)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>Non TPI</span>
+              )}
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
               <p className="form-label">Statut</p>
