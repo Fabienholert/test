@@ -31,17 +31,30 @@ async function extractDataFromPDF(buffer) {
     }
   }
 
-  // Extraction d'une date (format DD/MM/YYYY)
-  const dateMatch = text.match(/\d{2}\/\d{2}\/\d{4}/);
-  if (dateMatch) result.dateEntree = dateMatch[0];
+    // 1. OR N° (Commence par 14)
+    const orMatch = noSpaceText.match(/14[0-9]{4,10}/);
+    if (orMatch) result.numero = orMatch[0];
 
-  // Lettre Moteur
-  const moteurMatch = text.match(/moteur\s*:\s*([A-Z0-9]{3,4})/i) || text.match(/\b([A-Z]{3,4})\b(?=.*moteur)/i);
-  if (moteurMatch) result.lettreMoteur = moteurMatch[1].toUpperCase();
+    // 2. Châssis (VIN - 17 caractères, commence par VSS, TMB ou WVW)
+    const vinMatch = noSpaceText.match(/(VSS|TMB|WVW)[A-Z0-9]{14}/i);
+    if (vinMatch) result.vin = vinMatch[0].toUpperCase();
 
-  // Type
-  const typeMatch = text.match(/type\s*:\s*([A-Z0-9]{3})/i);
-  if (typeMatch) result.typeVehicule = typeMatch[1].toUpperCase();
+    // 3. Immatriculation
+    const immatMatch = cleanText.match(/[A-Z]{2}[-\s]?\d{3}[-\s]?[A-Z]{2}/i) || 
+                       cleanText.match(/\d{3}\s[A-Z]{2,3}\s\d{2}/i);
+    if (immatMatch) result.immatriculation = immatMatch[0].toUpperCase().replace(/[-\s]/g, '-');
+
+    // 4. Kilométrage
+    const kmMatch = cleanText.match(/(\d{1,7})\s*km/i) || cleanText.match(/kilométrage\s*:?\s*(\d{1,7})/i);
+    if (kmMatch) result.kilometrage = parseInt(kmMatch[1]);
+
+    // 5. Lettre Moteur (3-4 chars)
+    const moteurMatch = cleanText.match(/moteur\s*[:\s]+([A-Z0-9]{3,4})/i);
+    if (moteurMatch) result.lettreMoteur = moteurMatch[1].toUpperCase();
+
+    // 6. Type (3-6 chars)
+    const typeMatch = cleanText.match(/type\s*[:\s]+([A-Z0-9]{3,6})/i);
+    if (typeMatch) result.typeVehicule = typeMatch[1].toUpperCase();
 
   console.log('--- RESULTAT ANALYSE ---', result);
   return result;

@@ -12,7 +12,7 @@ const DossierSchema = new mongoose.Schema({
   dateEntree: { type: Date, required: true },
   dateImpression: { type: Date },
   isDISS: { type: Boolean, default: false },
-  numDISS: { type: String },
+  numDISS: { type: [String], default: [] },
   isTPI: { type: Boolean, default: false },
   numTPI: { type: String },
   hasFichePedagogique: { type: Boolean, default: false },

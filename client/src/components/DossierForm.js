@@ -24,7 +24,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     dateEntree: null,
     dateImpression: null,
     isDISS: false,
-    numDISS: '',
+    numDISS: [],
     isTPI: false,
     numTPI: '',
     descriptionPanne: '',
@@ -34,7 +34,8 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     nomTechnicien: '',
     dommage: '',
     libelleDommage: '',
-    statut: 'En attente'
+    statut: 'En attente',
+    lastExtractedText: ''
   });
   const [ficheFile, setFicheFile] = useState(null);
   const [documentPdfFile, setDocumentPdfFile] = useState(null);
@@ -55,7 +56,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         dateEntree: initialData.dateEntree ? new Date(initialData.dateEntree) : null,
         dateImpression: initialData.dateImpression ? new Date(initialData.dateImpression) : null,
         isDISS: initialData.isDISS || false,
-        numDISS: initialData.numDISS || '',
+        numDISS: Array.isArray(initialData.numDISS) ? initialData.numDISS : (initialData.numDISS ? [initialData.numDISS] : []),
         isTPI: initialData.isTPI || false,
         numTPI: initialData.numTPI || '',
         descriptionPanne: initialData.descriptionPanne || '',
@@ -155,6 +156,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     setStatusMessage({ type: 'success', text: "Lancement de l'analyse OCR locale (peut prendre 10-20s)..." });
     
     setIsAnalyzing(true);
+    setFormData(prev => ({ ...prev, lastExtractedText: '' }));
     
     try {
       // Analyse dans le navigateur pour supporter les PDFs scannés
@@ -165,18 +167,44 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
 
       setFormData(prev => ({
         ...prev,
+        numero: data.numero || prev.numero,
+        marque: data.marque || prev.marque,
         vin: data.vin || prev.vin,
         immatriculation: data.immatriculation || prev.immatriculation,
         kilometrage: data.kilometrage || prev.kilometrage,
         lettreMoteur: data.lettreMoteur || prev.lettreMoteur,
         typeVehicule: data.typeVehicule || prev.typeVehicule,
-        dateEntree: data.dateEntree ? new Date(data.dateEntree.split('/').reverse().join('-')) : prev.dateEntree
+        dateEntree: data.dateEntree ? new Date(data.dateEntree.split('/').reverse().join('-')) : prev.dateEntree,
+        dateImpression: data.dateImpression ? new Date(data.dateImpression.split('/').reverse().join('-')) : prev.dateImpression,
+        isDISS: data.isDISS || prev.isDISS,
+        numDISS: data.numDISS && data.numDISS.length > 0 ? data.numDISS : prev.numDISS,
+        descriptionPanne: data.descriptionPanne || prev.descriptionPanne,
+        lastExtractedText: text
       }));
       
-      setStatusMessage({ type: 'success', text: "Analyse terminée ! Les informations ont été extraites du document scanné." });
+      const foundFields = [];
+      if (data.numero) foundFields.push('OR N°');
+      if (data.dateImpression) foundFields.push('Date Impression');
+      if (data.vin) foundFields.push('Châssis');
+      if (data.numDISS) foundFields.push('DISS');
+      if (data.immatriculation) foundFields.push('Immat');
+      if (data.kilometrage) foundFields.push('KM');
+      if (data.lettreMoteur) foundFields.push('Moteur');
+      if (data.typeVehicule) foundFields.push('Type');
+      if (data.dateEntree) foundFields.push('Date');
+
+      setStatusMessage({ 
+        type: 'success', 
+        text: foundFields.length > 0 
+          ? `Analyse terminée ! Champs détectés : ${foundFields.join(', ')}.` 
+          : "Analyse terminée, mais aucune information n'a été détectée. Veuillez vérifier la qualité du document."
+      });
     } catch (err) {
       console.error('Erreur OCR Frontend:', err);
-      setStatusMessage({ type: 'error', text: "L'analyse locale a échoué. Tentative via le serveur..." });
+      let errorDetail = "Erreur d'analyse locale.";
+      if (err.message?.includes('worker')) errorDetail = "Erreur de chargement du moteur PDF (Vérifiez votre connexion internet).";
+      
+      setStatusMessage({ type: 'error', text: `${errorDetail} Tentative via le serveur...` });
       
       // Fallback vers le serveur
       const formData = new FormData();
@@ -365,6 +393,36 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         </div>
       )}
 
+      {/* Affichage du texte extrait pour vérification */}
+      {formData.lastExtractedText && (
+        <div className="glass-panel" style={{ 
+          marginBottom: '1.5rem', 
+          padding: '1rem', 
+          background: 'rgba(255,255,255,0.03)',
+          border: '1px solid var(--border-color)',
+          fontSize: '0.85rem'
+        }}>
+          <details>
+            <summary style={{ cursor: 'pointer', color: 'var(--primary)', fontWeight: '600' }}>
+              📄 Voir le texte extrait du document ({formData.lastExtractedText.length} caractères)
+            </summary>
+            <div style={{ 
+              marginTop: '1rem', 
+              maxHeight: '200px', 
+              overflowY: 'auto', 
+              padding: '0.5rem',
+              background: 'rgba(0,0,0,0.3)',
+              borderRadius: 'var(--radius-sm)',
+              whiteSpace: 'pre-wrap',
+              fontFamily: 'monospace',
+              color: 'var(--text-muted)'
+            }}>
+              {formData.lastExtractedText}
+            </div>
+          </details>
+        </div>
+      )}
+
       <div className="grid grid-cols-2">
         <div className="form-group">
           <label className="form-label">OR N° *</label>
@@ -522,18 +580,33 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
               style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }}
             />
             <span style={{ color: formData.isDISS ? 'var(--primary)' : 'var(--text-muted)', fontWeight: formData.isDISS ? '600' : '400', transition: 'color 0.2s' }}>
-              {formData.isDISS ? 'Oui — DISS confirmé' : 'Non'}
+              {formData.isDISS ? `Oui — ${formData.numDISS.length} DISS` : 'Non'}
             </span>
           </label>
           {formData.isDISS && (
-            <input
-              type="text"
-              name="numDISS"
-              className="form-control"
-              value={formData.numDISS}
-              onChange={handleChange}
-              placeholder="N° DISS (ex: DISS-2024-001)"
-            />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {(formData.numDISS.length > 0 ? formData.numDISS : ['']).map((d, i) => (
+                <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={d}
+                    onChange={e => {
+                      const updated = [...formData.numDISS];
+                      updated[i] = e.target.value.toUpperCase();
+                      setFormData(prev => ({ ...prev, numDISS: updated }));
+                    }}
+                    placeholder={`N° DISS ${i + 1} (ex: DISS-2024-00${i + 1})`}
+                    style={{ flex: 1, textTransform: 'uppercase' }}
+                  />
+                  <button type="button" onClick={() => {
+                    const updated = formData.numDISS.filter((_, idx) => idx !== i);
+                    setFormData(prev => ({ ...prev, numDISS: updated, isDISS: updated.length > 0 }));
+                  }} style={{ background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)', color: '#f87171', borderRadius: '6px', padding: '0.4rem 0.7rem', cursor: 'pointer' }}>✕</button>
+                </div>
+              ))}
+              <button type="button" onClick={() => setFormData(prev => ({ ...prev, numDISS: [...prev.numDISS, ''] }))} className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', alignSelf: 'flex-start' }}>+ Ajouter un DISS</button>
+            </div>
           )}
         </div>
 
