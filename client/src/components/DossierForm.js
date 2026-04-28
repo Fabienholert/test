@@ -324,9 +324,9 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         
         // Si on est dans la section "Directive de facture" (Activité) -> Main d'Oeuvre
         if (inDirectiveFacture || line.includes('activité')) {
-          // On regarde la ligne actuelle et la suivante pour trouver le code (souvent 6 à 8 caractères) et le temps
+          // On regarde la ligne actuelle et la suivante pour trouver le code d'activité (exactement 8 chiffres) et le temps
           const context = lines.slice(i, i + 2).join(' ');
-          const activiteMatch = context.match(/\b([A-Z0-9]{6,8})\b/i);
+          const activiteMatch = context.match(/\b(\d{8})\b/);
           const tempsMatch = context.match(/\b(\d+[,.]\d{2})\b/);
           
           if (activiteMatch && activiteMatch[1].toLowerCase() !== formData.critere.toLowerCase() && !foundMO) {
