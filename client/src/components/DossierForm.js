@@ -283,26 +283,74 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
 
     console.log('Texte MCQ extrait:', extractedText);
     
-    // Extraction générique en attendant des règles spécifiques basées sur le format réel
+    // Extraction basée sur les règles métier spécifiques
     let foundCode = '';
     let foundPieces = '';
     let foundMO = '';
     
-    // Recherche de "Code avarie" ou mots-clés similaires
-    const avarieMatch = extractedText.match(/Code (?:d['']?)?avarie\s*[:\-]?\s*([A-Z0-9]+)/i);
-    if (avarieMatch) foundCode = avarieMatch[1];
+    // 1. Recherche de la "mesure qualité" (Code avarie) - 4 caractères
+    // On cherche "mesure qualité" suivi de 4 caractères alphanumériques
+    const mqMatch = extractedText.match(/mesure\s*(?:de\s*)?qualit[éèe]\s*[:\-]?\s*([A-Z0-9]{4})\b/i);
+    if (mqMatch) {
+      foundCode = mqMatch[1];
+    } else {
+      // Fallback si écrit différemment
+      const fallbackAvarieMatch = extractedText.match(/(?:code(?:\s*d['']?avarie)?|action|campagne)\s*[:\-]?\s*([A-Z0-9]{4})\b/i);
+      if (fallbackAvarieMatch) foundCode = fallbackAvarieMatch[1];
+    }
     
-    // Recherche de la ligne correspondant au critère si possible (très basique sans exemple)
+    // 2. Recherche par critère pour la Main d'œuvre et les Pièces
     const lines = extractedText.split('\n');
+    let inDirectiveFacture = false;
+    let inPiecesOrigine = false;
+
+    // Le critère saisi par l'utilisateur (on s'assure de le chercher comme un mot complet)
+    const critereRegex = new RegExp(`\\b${formData.critere}\\b`, 'i');
+
     for (let i = 0; i < lines.length; i++) {
-      if (lines[i].includes(formData.critere)) {
-        // Si le critère est trouvé, on cherche des infos autour (c'est un placeholder d'analyse)
-        const nextLines = lines.slice(i, i + 10).join(' '); // recherche plus large
-        const piecesMatch = nextLines.match(/(?:Pièces|Ref|Référence|Pièce)\s*[:\-]?\s*([A-Z0-9\s]+)/i);
-        const moMatch = nextLines.match(/(?:Main (?:d['']?)?oeuvre|MO|Temps)\s*[:\-]?\s*([\d,.\w\s]+)/i);
+      const line = lines[i].toLowerCase();
+      
+      // Détection des sections en fonction des mots clés
+      if (line.includes('directive de facture') || line.includes('activité')) {
+        inDirectiveFacture = true;
+        inPiecesOrigine = false;
+      } else if (line.includes('pièces d\'origine') || line.includes('pièces requises')) {
+        inPiecesOrigine = true;
+        inDirectiveFacture = false;
+      }
+
+      // Si la ligne contient le critère recherché
+      if (critereRegex.test(line)) {
         
-        if (piecesMatch && !foundPieces) foundPieces = piecesMatch[1].trim();
-        if (moMatch && !foundMO) foundMO = moMatch[1].trim();
+        // Si on est dans la section "Directive de facture" (Activité) -> Main d'Oeuvre
+        if (inDirectiveFacture || line.includes('activité')) {
+          // On regarde la ligne actuelle et la suivante pour trouver le code (souvent 6 à 8 caractères) et le temps
+          const context = lines.slice(i, i + 2).join(' ');
+          const activiteMatch = context.match(/\b([A-Z0-9]{6,8})\b/i);
+          const tempsMatch = context.match(/\b(\d+[,.]\d{2})\b/);
+          
+          if (activiteMatch && activiteMatch[1].toLowerCase() !== formData.critere.toLowerCase() && !foundMO) {
+            foundMO = activiteMatch[1].toUpperCase();
+            if (tempsMatch) foundMO += ` (${tempsMatch[1]} UT)`;
+          }
+        }
+        
+        // Si on est dans la section "Pièces d'origine" -> Pièces
+        if (inPiecesOrigine) {
+          // On cherche une référence de pièce classique du groupe VAG (ex: 5Q0 123 456 A)
+          // ou une simple suite de chiffres/lettres
+          const context = lines.slice(i, i + 2).join(' ');
+          const pieceMatch = context.match(/\b([A-Z0-9]{3}\s?[A-Z0-9]{3}\s?[A-Z0-9]{3}(?:\s?[A-Z]{1,2})?)\b/i);
+          
+          if (pieceMatch && pieceMatch[1].toLowerCase() !== formData.critere.toLowerCase() && !foundPieces) {
+            foundPieces = pieceMatch[1].toUpperCase().trim();
+          } else if (!foundPieces) {
+            // Fallback si la pièce a un format différent
+            const words = lines[i].split(/\s+/);
+            const potentialPiece = words.find(w => w.length > 5 && w.match(/[A-Z0-9]/i) && w.toLowerCase() !== formData.critere.toLowerCase());
+            if (potentialPiece) foundPieces = potentialPiece.toUpperCase();
+          }
+        }
       }
     }
 

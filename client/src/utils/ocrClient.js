@@ -87,11 +87,17 @@ export function parseDossierText(text) {
     result.immatriculation = immatMatch[0].toUpperCase().replace(/[-\s]/g, '-');
   }
 
-  // 4. Lettre Moteur (3-4 caractères majuscules isolés ou après "Moteur")
-  const moteurMatch = cleanText.match(/moteur\s*[:\s]+([A-Z0-9]{3,4})/i) || 
-                      cleanText.match(/\b([A-Z]{3,4})\b/); // Très risqué, on préfère avec contexte
-  if (moteurMatch) {
-    result.lettreMoteur = moteurMatch[1].toUpperCase();
+  // 4. Lettre Moteur (souvent en dessous du mot "moteur" sur l'OR)
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].toLowerCase().includes('moteur')) {
+      const searchArea = lines.slice(i, i + 3).join(' ');
+      const match = searchArea.match(/(?:moteur[^\n]*\s+)?\b([A-Z]{3,4})\b/i);
+      if (match && !['TMB', 'WVW', 'VSS', 'SEAT', 'AUTO', 'KIL'].includes(match[1].toUpperCase())) {
+        result.lettreMoteur = match[1].toUpperCase();
+        break;
+      }
+    }
   }
 
   // 5. Type & Modèle

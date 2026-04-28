@@ -30,9 +30,18 @@ async function extractDataFromPDF(buffer) {
   const kmMatch = cleanText.match(/(\d{1,7})\s*km/i) || cleanText.match(/kilométrage\s*:?\s*(\d{1,7})/i);
   if (kmMatch) result.kilometrage = parseInt(kmMatch[1]);
 
-  // 5. Lettre Moteur (3-4 chars)
-  const moteurMatch = cleanText.match(/moteur\s*[:\s]+([A-Z0-9]{3,4})/i);
-  if (moteurMatch) result.lettreMoteur = moteurMatch[1].toUpperCase();
+  // 5. Lettre Moteur (souvent en dessous sur l'OR)
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].toLowerCase().includes('moteur')) {
+      const searchArea = lines.slice(i, i + 3).join(' ');
+      const match = searchArea.match(/(?:moteur[^\n]*\s+)?\b([A-Z]{3,4})\b/i);
+      if (match && !['TMB', 'WVW', 'VSS', 'SEAT', 'AUTO'].includes(match[1].toUpperCase())) {
+        result.lettreMoteur = match[1].toUpperCase();
+        break;
+      }
+    }
+  }
 
   // 6. Type (3-6 chars)
   const typeMatch = cleanText.match(/type\s*[:\s]+([A-Z0-9]{3,6})/i);
