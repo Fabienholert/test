@@ -54,49 +54,53 @@ async function extractDataFromPDF(buffer) {
     if (kmMatch) result.kilometrage = parseInt(kmMatch[1]);
   }
 
-  // 5. Lettre Moteur (juste en dessous de l'inscription "lettre moteur")
+  // 5. Lettre Moteur et Modèle (modèle juste après la lettre moteur)
   for (let i = 0; i < lines.length; i++) {
     const lineLower = lines[i].toLowerCase();
     if (lineLower.includes('lettre') && lineLower.includes('moteur')) {
-      // On regarde strictement sur les 2 lignes en dessous
-      const nextLines = lines.slice(i + 1, i + 3).join(' ');
-      const match = nextLines.match(/\b([A-Z]{3,4})\b/);
-      if (match && !['TMB', 'WVW', 'VSS', 'SEAT', 'AUTO', 'KIL'].includes(match[1].toUpperCase())) {
-        result.lettreMoteur = match[1].toUpperCase();
-        break;
+      // On regarde la ligne courante et les 2 en dessous
+      const searchLines = lines.slice(i, i + 3);
+      for (let j = 0; j < searchLines.length; j++) {
+        const line = searchLines[j];
+        const match = line.match(/\b([A-Z]{3,4})\b/);
+        // Exclure des mots courants
+        if (match && !['TMB', 'WVW', 'VSS', 'SEAT', 'AUTO', 'KIL', 'MOT', 'LETT', 'TYPE'].includes(match[1].toUpperCase())) {
+          result.lettreMoteur = match[1].toUpperCase();
+          
+          // Le modèle est juste après les lettres moteurs
+          let afterLetters = line.substring(match.index + match[0].length).trim();
+          afterLetters = afterLetters.replace(/^(?:modèle|model)?\s*[:\/\-]*\s*/i, '').trim();
+          
+          if (afterLetters && afterLetters.length >= 2) {
+            result.modele = afterLetters;
+          } else {
+            // Si vide, on regarde la ligne suivante
+            const nextLine = (searchLines[j + 1] || '').trim();
+            if (nextLine && nextLine.length >= 2) {
+              result.modele = nextLine.replace(/^(?:modèle|model)?\s*[:\/\-]*\s*/i, '').trim();
+            }
+          }
+          break;
+        }
       }
+      if (result.lettreMoteur) break;
     }
   }
 
-  // 6. Type et Modèle (modèle en dessous du type)
+  // 6. Type
   for (let i = 0; i < lines.length; i++) {
     const lineLower = lines[i].toLowerCase();
     if (lineLower.includes('type')) {
-      let typeNum = '';
-      let typeLineIndex = i;
-      
       const typeMatch = lines[i].match(/type\s*[:\-]?\s*([A-Z0-9]{3,6})/i);
       if (typeMatch) {
-        typeNum = typeMatch[1].toUpperCase();
+        result.typeVehicule = typeMatch[1].toUpperCase();
+        break;
       } else {
         const nextLineMatch = (lines[i + 1] || '').match(/^([A-Z0-9]{3,6})$/i);
         if (nextLineMatch) {
-          typeNum = nextLineMatch[1].toUpperCase();
-          typeLineIndex = i + 1;
+          result.typeVehicule = nextLineMatch[1].toUpperCase();
+          break;
         }
-      }
-
-      if (typeNum) {
-        result.typeVehicule = typeNum;
-        // Le modèle est juste en dessous du numéro de type
-        for (let j = 1; j <= 2; j++) {
-          const nextLine = (lines[typeLineIndex + j] || '').trim();
-          if (nextLine.length >= 2 && nextLine.length < 30 && !nextLine.match(/^[0-9]+$/)) {
-            result.modele = nextLine;
-            break;
-          }
-        }
-        break;
       }
     }
   }
