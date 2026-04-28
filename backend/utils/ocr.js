@@ -51,4 +51,11 @@ async function extractDataFromPDF(buffer) {
   return result;
 }
 
-module.exports = { extractDataFromPDF };
+async function extractRawTextFromPDF(buffer) {
+  const parser = new PDFParse({ data: buffer });
+  const data = await parser.getText();
+  await parser.destroy();
+  return data.text;
+}
+
+module.exports = { extractDataFromPDF, extractRawTextFromPDF };

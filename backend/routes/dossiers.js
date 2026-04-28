@@ -3,7 +3,7 @@ const router = express.Router();
 const Dossier = require('../models/Dossier');
 const multer = require('multer');
 const path = require('path');
-const { extractDataFromPDF } = require('../utils/ocr');
+const { extractDataFromPDF, extractRawTextFromPDF } = require('../utils/ocr');
 const fs = require('fs');
 
 // Configuration Multer pour les pièces jointes
@@ -35,6 +35,23 @@ router.post('/analyze', upload.single('documentPdfFile'), async (req, res) => {
   } catch (err) {
     console.error('Erreur analyse PDF:', err);
     res.status(500).json({ message: 'Erreur lors de l\'analyse du PDF' });
+  }
+});
+
+// Route d'analyse brute de PDF (MCQ)
+router.post('/analyzeMCQ', upload.single('ficheMCQFile'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Aucun fichier PDF fourni' });
+    }
+
+    const buffer = fs.readFileSync(req.file.path);
+    const rawText = await extractRawTextFromPDF(buffer);
+    
+    res.json({ text: rawText });
+  } catch (err) {
+    console.error('Erreur analyse brute PDF:', err);
+    res.status(500).json({ message: 'Erreur lors de l\'extraction du texte du PDF' });
   }
 });
 

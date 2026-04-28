@@ -256,63 +256,77 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
       return;
     }
 
-    setStatusMessage({ type: 'success', text: "Lancement de l'analyse OCR locale de la fiche MCQ..." });
+    setStatusMessage({ type: 'success', text: "Lancement de l'analyse OCR de la fiche MCQ..." });
     setIsAnalyzing(true);
     setFormData(prev => ({ ...prev, lastExtractedText: '' }));
 
+    let extractedText = '';
+
     try {
-      const text = await performClientSideOCR(ficheMCQFile);
-      console.log('Texte MCQ extrait:', text);
-      
-      // Extraction générique en attendant des règles spécifiques basées sur le format réel
-      let foundCode = '';
-      let foundPieces = '';
-      let foundMO = '';
-      
-      // Recherche de "Code avarie" ou mots-clés similaires
-      const avarieMatch = text.match(/Code (?:d['']?)?avarie\s*[:\-]?\s*([A-Z0-9]+)/i);
-      if (avarieMatch) foundCode = avarieMatch[1];
-      
-      // Recherche de la ligne correspondant au critère si possible (très basique sans exemple)
-      const lines = text.split('\n');
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes(formData.critere)) {
-          // Si le critère est trouvé, on cherche des infos autour (c'est un placeholder d'analyse)
-          const nextLines = lines.slice(i, i + 5).join(' ');
-          const piecesMatch = nextLines.match(/(?:Pièces|Ref|Référence)\s*[:\-]?\s*([A-Z0-9\s]+)/i);
-          const moMatch = nextLines.match(/(?:Main (?:d['']?)?oeuvre|MO|Temps)\s*[:\-]?\s*([\d,.\w\s]+)/i);
-          
-          if (piecesMatch && !foundPieces) foundPieces = piecesMatch[1].trim();
-          if (moMatch && !foundMO) foundMO = moMatch[1].trim();
-        }
+      extractedText = await performClientSideOCR(ficheMCQFile);
+      if (!extractedText || extractedText.trim().length < 10) {
+        throw new Error('Texte extrait vide');
       }
-
-      setFormData(prev => ({
-        ...prev,
-        dommage: foundCode || prev.dommage,
-        pieces: foundPieces || prev.pieces,
-        mainOeuvre: foundMO || prev.mainOeuvre,
-        lastExtractedText: text
-      }));
-
-      const foundFields = [];
-      if (foundCode) foundFields.push('Code Avarie');
-      if (foundPieces) foundFields.push('Pièces');
-      if (foundMO) foundFields.push('Main d\'oeuvre');
-
-      setStatusMessage({ 
-        type: 'success', 
-        text: foundFields.length > 0 
-          ? `Analyse MCQ terminée ! Champs détectés : ${foundFields.join(', ')}.` 
-          : "Analyse terminée, mais aucune information correspondant au critère n'a pu être extraite."
-      });
-
     } catch (err) {
-      console.error('Erreur OCR Frontend MCQ:', err);
-      setStatusMessage({ type: 'error', text: "Erreur lors de l'analyse de la fiche MCQ." });
-    } finally {
-      setIsAnalyzing(false);
+      console.log('Fallback serveur pour le PDF MCQ...');
+      const formDataUpload = new FormData();
+      formDataUpload.append('ficheMCQFile', ficheMCQFile);
+      try {
+        const res = await axios.post('/api/dossiers/analyzeMCQ', formDataUpload);
+        extractedText = res.data.text || '';
+      } catch (serverErr) {
+        setStatusMessage({ type: 'error', text: "Impossible de lire le fichier PDF (localement et serveur)." });
+        setIsAnalyzing(false);
+        return;
+      }
     }
+
+    console.log('Texte MCQ extrait:', extractedText);
+    
+    // Extraction générique en attendant des règles spécifiques basées sur le format réel
+    let foundCode = '';
+    let foundPieces = '';
+    let foundMO = '';
+    
+    // Recherche de "Code avarie" ou mots-clés similaires
+    const avarieMatch = extractedText.match(/Code (?:d['']?)?avarie\s*[:\-]?\s*([A-Z0-9]+)/i);
+    if (avarieMatch) foundCode = avarieMatch[1];
+    
+    // Recherche de la ligne correspondant au critère si possible (très basique sans exemple)
+    const lines = extractedText.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes(formData.critere)) {
+        // Si le critère est trouvé, on cherche des infos autour (c'est un placeholder d'analyse)
+        const nextLines = lines.slice(i, i + 10).join(' '); // recherche plus large
+        const piecesMatch = nextLines.match(/(?:Pièces|Ref|Référence|Pièce)\s*[:\-]?\s*([A-Z0-9\s]+)/i);
+        const moMatch = nextLines.match(/(?:Main (?:d['']?)?oeuvre|MO|Temps)\s*[:\-]?\s*([\d,.\w\s]+)/i);
+        
+        if (piecesMatch && !foundPieces) foundPieces = piecesMatch[1].trim();
+        if (moMatch && !foundMO) foundMO = moMatch[1].trim();
+      }
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      dommage: foundCode || prev.dommage,
+      pieces: foundPieces || prev.pieces,
+      mainOeuvre: foundMO || prev.mainOeuvre,
+      lastExtractedText: extractedText
+    }));
+
+    const foundFields = [];
+    if (foundCode) foundFields.push('Code Avarie');
+    if (foundPieces) foundFields.push('Pièces');
+    if (foundMO) foundFields.push('Main d\'oeuvre');
+
+    setStatusMessage({ 
+      type: 'success', 
+      text: foundFields.length > 0 
+        ? `Analyse MCQ terminée ! Champs détectés : ${foundFields.join(', ')}.` 
+        : "Le texte a bien été lu, mais aucune information n'a été trouvée pour ce critère (vérifiez la vue 'Texte extrait')."
+    });
+
+    setIsAnalyzing(false);
   };
 
   const handleLibelleChange = (e) => {
