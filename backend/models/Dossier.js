@@ -29,6 +29,8 @@ const DossierSchema = new mongoose.Schema({
   numeroMCQ: { type: String },
   critere: { type: String },
   ficheMCQUrl: { type: String },
+  pieces: { type: String },
+  mainOeuvre: { type: String },
   // Champs communs
   documentPdfUrl: { type: String },
   isPointageVerifie: { type: Boolean, default: false },

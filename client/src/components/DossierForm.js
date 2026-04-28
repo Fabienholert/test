@@ -38,6 +38,8 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     statut: 'En attente',
     numeroMCQ: '',
     critere: '',
+    pieces: '',
+    mainOeuvre: '',
     lastExtractedText: ''
   });
   const [ficheFile, setFicheFile] = useState(null);
@@ -73,7 +75,9 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         libelleDommage: initialData.libelleDommage || '',
         statut: initialData.statut || 'En attente',
         numeroMCQ: initialData.numeroMCQ || '',
-        critere: initialData.critere || ''
+        critere: initialData.critere || '',
+        pieces: initialData.pieces || '',
+        mainOeuvre: initialData.mainOeuvre || ''
       });
       setFicheFile(null);
       setFicheMCQFile(null);
@@ -236,6 +240,76 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         console.error(serverErr);
         setStatusMessage({ type: 'error', text: "Toutes les méthodes d'analyse ont échoué. Veuillez remplir les champs manuellement." });
       }
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleAnalyzeMCQ = async () => {
+    if (!ficheMCQFile) {
+      setStatusMessage({ type: 'error', text: "Veuillez d'abord sélectionner un fichier MCQ (PDF)." });
+      return;
+    }
+    
+    if (!formData.critere) {
+      setStatusMessage({ type: 'error', text: "Veuillez renseigner le critère avant d'analyser la fiche MCQ." });
+      return;
+    }
+
+    setStatusMessage({ type: 'success', text: "Lancement de l'analyse OCR locale de la fiche MCQ..." });
+    setIsAnalyzing(true);
+    setFormData(prev => ({ ...prev, lastExtractedText: '' }));
+
+    try {
+      const text = await performClientSideOCR(ficheMCQFile);
+      console.log('Texte MCQ extrait:', text);
+      
+      // Extraction générique en attendant des règles spécifiques basées sur le format réel
+      let foundCode = '';
+      let foundPieces = '';
+      let foundMO = '';
+      
+      // Recherche de "Code avarie" ou mots-clés similaires
+      const avarieMatch = text.match(/Code (?:d['']?)?avarie\s*[:\-]?\s*([A-Z0-9]+)/i);
+      if (avarieMatch) foundCode = avarieMatch[1];
+      
+      // Recherche de la ligne correspondant au critère si possible (très basique sans exemple)
+      const lines = text.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes(formData.critere)) {
+          // Si le critère est trouvé, on cherche des infos autour (c'est un placeholder d'analyse)
+          const nextLines = lines.slice(i, i + 5).join(' ');
+          const piecesMatch = nextLines.match(/(?:Pièces|Ref|Référence)\s*[:\-]?\s*([A-Z0-9\s]+)/i);
+          const moMatch = nextLines.match(/(?:Main (?:d['']?)?oeuvre|MO|Temps)\s*[:\-]?\s*([\d,.\w\s]+)/i);
+          
+          if (piecesMatch && !foundPieces) foundPieces = piecesMatch[1].trim();
+          if (moMatch && !foundMO) foundMO = moMatch[1].trim();
+        }
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        dommage: foundCode || prev.dommage,
+        pieces: foundPieces || prev.pieces,
+        mainOeuvre: foundMO || prev.mainOeuvre,
+        lastExtractedText: text
+      }));
+
+      const foundFields = [];
+      if (foundCode) foundFields.push('Code Avarie');
+      if (foundPieces) foundFields.push('Pièces');
+      if (foundMO) foundFields.push('Main d\'oeuvre');
+
+      setStatusMessage({ 
+        type: 'success', 
+        text: foundFields.length > 0 
+          ? `Analyse MCQ terminée ! Champs détectés : ${foundFields.join(', ')}.` 
+          : "Analyse terminée, mais aucune information correspondant au critère n'a pu être extraite."
+      });
+
+    } catch (err) {
+      console.error('Erreur OCR Frontend MCQ:', err);
+      setStatusMessage({ type: 'error', text: "Erreur lors de l'analyse de la fiche MCQ." });
     } finally {
       setIsAnalyzing(false);
     }
@@ -754,8 +828,44 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
                 className="form-control"
                 value={formData.critere} 
                 onChange={handleChange} 
-                placeholder="Critère du rappel"
+                placeholder="Critère du rappel (ex: 01)"
                 required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Code Avarie</label>
+              <input 
+                type="text" 
+                name="dommage"
+                className="form-control"
+                value={formData.dommage} 
+                onChange={handleChange} 
+                placeholder="Ex: 93E9"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Référence des Pièces</label>
+              <input 
+                type="text" 
+                name="pieces"
+                className="form-control"
+                value={formData.pieces} 
+                onChange={handleChange} 
+                placeholder="Ex: 5Q0 123 456 A"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Main d'Œuvre (Référence / Temps)</label>
+              <input 
+                type="text" 
+                name="mainOeuvre"
+                className="form-control"
+                value={formData.mainOeuvre} 
+                onChange={handleChange} 
+                placeholder="Ex: 20451999 (0.50 UT)"
               />
             </div>
 
@@ -858,6 +968,17 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
                 style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}
                 accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
               />
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <button 
+                  type="button" 
+                  className="btn btn-secondary" 
+                  onClick={handleAnalyzeMCQ}
+                  disabled={isAnalyzing || !ficheMCQFile}
+                  style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
+                >
+                  {isAnalyzing ? 'Analyse...' : '🔍 Analyser la fiche MCQ'}
+                </button>
+              </div>
               <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                 {initialData.ficheMCQUrl ? 'Remplacer le fichier actuel' : 'Joindre la fiche MCQ (PDF, Image...)'}
               </p>
