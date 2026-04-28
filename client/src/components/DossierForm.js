@@ -806,7 +806,6 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         )}
 
         {formData.typeDossier === 'Garantie' && (
-          /* Fiche Pédagogique */
           <div className="form-group">
             <label className="form-label">Fiche Pédagogique ?</label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none', marginBottom: formData.hasFichePedagogique ? '0.75rem' : 0 }}>
@@ -844,7 +843,6 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         )}
 
         {formData.typeDossier === 'MCQ' && (
-          /* Fiche MCQ */
           <div className="form-group">
             <label className="form-label">Fiche MCQ</label>
             <div className="file-upload-container" style={{ 
@@ -866,103 +864,6 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
             </div>
           </div>
         )}
-
-        {/* Pointage Technicien */}
-        <div className="form-group">
-          <label className="form-label">Pointage Technicien ?</label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none', marginBottom: formData.isPointageVerifie ? '0.75rem' : 0 }}>
-            <input
-              type="checkbox"
-              name="isPointageVerifie"
-              checked={formData.isPointageVerifie}
-              onChange={handleChange}
-              style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }}
-            />
-            <span style={{ color: formData.isPointageVerifie ? 'var(--primary)' : 'var(--text-muted)', fontWeight: formData.isPointageVerifie ? '600' : '400', transition: 'color 0.2s' }}>
-              {formData.isPointageVerifie ? 'Pointage vérifié' : 'Non vérifié'}
-            </span>
-          </label>
-          {formData.isPointageVerifie && (
-            <input
-              type="text"
-              name="nomTechnicien"
-              className="form-control"
-              value={formData.nomTechnicien}
-              onChange={handleChange}
-              placeholder="Nom du technicien"
-            />
-          )}
-        </div>
-
-        {/* Document PDF Dossier */}
-        <div className="form-group">
-          <label className="form-label">Document PDF du Dossier</label>
-          <div className="file-upload-container" style={{ 
-            background: 'rgba(255,255,255,0.05)', 
-            padding: '0.75rem', 
-            borderRadius: 'var(--radius-md)',
-            border: '1px dashed var(--border-color)'
-          }}>
-            <input
-              type="file"
-              name="documentPdfFile"
-              onChange={handleFileChange}
-              style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}
-              accept=".pdf"
-            />
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
-                onClick={handleAnalyzePDF}
-                disabled={isAnalyzing || !documentPdfFile}
-                style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
-              >
-                {isAnalyzing ? 'Analyse...' : '🔍 Analyser l'ordre de réparation'}
-              </button>
-            </div>
-            <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              {initialData.documentPdfUrl ? 'Remplacer le document PDF' : 'Joindre le document PDF officiel du dossier'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-        {/* Fiche Pédagogique */}
-        <div className="form-group">
-          <label className="form-label">Fiche Pédagogique ?</label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none', marginBottom: formData.hasFichePedagogique ? '0.75rem' : 0 }}>
-            <input
-              type="checkbox"
-              name="hasFichePedagogique"
-              checked={formData.hasFichePedagogique}
-              onChange={handleChange}
-              style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }}
-            />
-            <span style={{ color: formData.hasFichePedagogique ? 'var(--primary)' : 'var(--text-muted)', fontWeight: formData.hasFichePedagogique ? '600' : '400', transition: 'color 0.2s' }}>
-              {formData.hasFichePedagogique ? 'Oui — Fiche présente' : 'Non'}
-            </span>
-          </label>
-          {formData.hasFichePedagogique && (
-            <div className="file-upload-container" style={{ 
-              background: 'rgba(255,255,255,0.05)', 
-              padding: '0.75rem', 
-              borderRadius: 'var(--radius-md)',
-              border: '1px dashed var(--border-color)'
-            }}>
-              <input
-                type="file"
-                name="fichePedagogiqueFile"
-                onChange={handleFileChange}
-                style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}
-                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-              />
-              <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                {initialData.fichePedagogiqueUrl ? 'Remplacer le fichier actuel' : 'Joindre la fiche pédagogique (PDF, Image...)'}
-              </p>
-            </div>
-          )}
-        </div>
 
         {/* Pointage Technicien */}
         <div className="form-group">
