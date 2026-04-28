@@ -64,6 +64,7 @@ router.get('/:id', async (req, res) => {
 // POST un nouveau dossier
 router.post('/', upload.fields([
   { name: 'fichePedagogiqueFile', maxCount: 1 },
+  { name: 'ficheMCQFile', maxCount: 1 },
   { name: 'documentPdfFile', maxCount: 1 }
 ]), async (req, res) => {
   try {
@@ -73,6 +74,9 @@ router.post('/', upload.fields([
     if (req.files) {
       if (req.files['fichePedagogiqueFile']) {
         dossierData.fichePedagogiqueUrl = `/uploads/${req.files['fichePedagogiqueFile'][0].filename}`;
+      }
+      if (req.files['ficheMCQFile']) {
+        dossierData.ficheMCQUrl = `/uploads/${req.files['ficheMCQFile'][0].filename}`;
       }
       if (req.files['documentPdfFile']) {
         dossierData.documentPdfUrl = `/uploads/${req.files['documentPdfFile'][0].filename}`;
@@ -90,6 +94,7 @@ router.post('/', upload.fields([
 // PUT mettre à jour un dossier
 router.put('/:id', upload.fields([
   { name: 'fichePedagogiqueFile', maxCount: 1 },
+  { name: 'ficheMCQFile', maxCount: 1 },
   { name: 'documentPdfFile', maxCount: 1 }
 ]), async (req, res) => {
   try {
@@ -98,6 +103,9 @@ router.put('/:id', upload.fields([
     if (req.files) {
       if (req.files['fichePedagogiqueFile']) {
         updateData.fichePedagogiqueUrl = `/uploads/${req.files['fichePedagogiqueFile'][0].filename}`;
+      }
+      if (req.files['ficheMCQFile']) {
+        updateData.ficheMCQUrl = `/uploads/${req.files['ficheMCQFile'][0].filename}`;
       }
       if (req.files['documentPdfFile']) {
         updateData.documentPdfUrl = `/uploads/${req.files['documentPdfFile'][0].filename}`;

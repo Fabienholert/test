@@ -23,6 +23,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     kilometrage: '',
     dateEntree: null,
     dateImpression: null,
+    typeDossier: 'Garantie',
     isDISS: false,
     numDISS: [],
     isTPI: false,
@@ -35,9 +36,12 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     dommage: '',
     libelleDommage: '',
     statut: 'En attente',
+    numeroMCQ: '',
+    critere: '',
     lastExtractedText: ''
   });
   const [ficheFile, setFicheFile] = useState(null);
+  const [ficheMCQFile, setFicheMCQFile] = useState(null);
   const [documentPdfFile, setDocumentPdfFile] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null); // { type: 'success' | 'error', text: string }
@@ -55,6 +59,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         kilometrage: initialData.kilometrage || '',
         dateEntree: initialData.dateEntree ? new Date(initialData.dateEntree) : null,
         dateImpression: initialData.dateImpression ? new Date(initialData.dateImpression) : null,
+        typeDossier: initialData.typeDossier || 'Garantie',
         isDISS: initialData.isDISS || false,
         numDISS: Array.isArray(initialData.numDISS) ? initialData.numDISS : (initialData.numDISS ? [initialData.numDISS] : []),
         isTPI: initialData.isTPI || false,
@@ -66,9 +71,12 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
         nomTechnicien: initialData.nomTechnicien || '',
         dommage: initialData.dommage || '',
         libelleDommage: initialData.libelleDommage || '',
-        statut: initialData.statut || 'En attente'
+        statut: initialData.statut || 'En attente',
+        numeroMCQ: initialData.numeroMCQ || '',
+        critere: initialData.critere || ''
       });
       setFicheFile(null);
+      setFicheMCQFile(null);
       setDocumentPdfFile(null);
     }
   }, [initialData]);
@@ -142,6 +150,8 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     const { name, files } = e.target;
     if (name === 'fichePedagogiqueFile') {
       setFicheFile(files[0]);
+    } else if (name === 'ficheMCQFile') {
+      setFicheMCQFile(files[0]);
     } else if (name === 'documentPdfFile') {
       setDocumentPdfFile(files[0]);
     }
@@ -302,6 +312,9 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     if (ficheFile) {
       submitData.append('fichePedagogiqueFile', ficheFile);
     }
+    if (ficheMCQFile) {
+      submitData.append('ficheMCQFile', ficheMCQFile);
+    }
     if (documentPdfFile) {
       submitData.append('documentPdfFile', documentPdfFile);
     }
@@ -422,6 +435,34 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
           </details>
         </div>
       )}
+
+      <div className="form-group" style={{ marginBottom: '2rem' }}>
+        <label className="form-label">Type de dossier *</label>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+            <input
+              type="radio"
+              name="typeDossier"
+              value="Garantie"
+              checked={formData.typeDossier === 'Garantie'}
+              onChange={handleChange}
+              style={{ width: '18px', height: '18px', accentColor: 'var(--primary)' }}
+            />
+            <span style={{ fontWeight: formData.typeDossier === 'Garantie' ? '600' : '400' }}>Garantie</span>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+            <input
+              type="radio"
+              name="typeDossier"
+              value="MCQ"
+              checked={formData.typeDossier === 'MCQ'}
+              onChange={handleChange}
+              style={{ width: '18px', height: '18px', accentColor: 'var(--primary)' }}
+            />
+            <span style={{ fontWeight: formData.typeDossier === 'MCQ' ? '600' : '400' }}>MCQ (Rappel)</span>
+          </label>
+        </div>
+      </div>
 
       <div className="grid grid-cols-2">
         <div className="form-group">
@@ -568,147 +609,324 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
           />
         </div>
 
-        {/* DISS */}
-        <div className="form-group">
-          <label className="form-label">DISS ?</label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none', marginBottom: formData.isDISS ? '0.75rem' : 0 }}>
-            <input
-              type="checkbox"
-              name="isDISS"
-              checked={formData.isDISS}
-              onChange={handleChange}
-              style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }}
-            />
-            <span style={{ color: formData.isDISS ? 'var(--primary)' : 'var(--text-muted)', fontWeight: formData.isDISS ? '600' : '400', transition: 'color 0.2s' }}>
-              {formData.isDISS ? `Oui — ${formData.numDISS.length} DISS` : 'Non'}
-            </span>
-          </label>
-          {formData.isDISS && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {(formData.numDISS.length > 0 ? formData.numDISS : ['']).map((d, i) => (
-                <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={d}
-                    onChange={e => {
-                      const updated = [...formData.numDISS];
-                      updated[i] = e.target.value.toUpperCase();
-                      setFormData(prev => ({ ...prev, numDISS: updated }));
-                    }}
-                    placeholder={`N° DISS ${i + 1} (ex: DISS-2024-00${i + 1})`}
-                    style={{ flex: 1, textTransform: 'uppercase' }}
-                  />
-                  <button type="button" onClick={() => {
-                    const updated = formData.numDISS.filter((_, idx) => idx !== i);
-                    setFormData(prev => ({ ...prev, numDISS: updated, isDISS: updated.length > 0 }));
-                  }} style={{ background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)', color: '#f87171', borderRadius: '6px', padding: '0.4rem 0.7rem', cursor: 'pointer' }}>✕</button>
+        {formData.typeDossier === 'Garantie' && (
+          <>
+            {/* DISS */}
+            <div className="form-group">
+              <label className="form-label">DISS ?</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none', marginBottom: formData.isDISS ? '0.75rem' : 0 }}>
+                <input
+                  type="checkbox"
+                  name="isDISS"
+                  checked={formData.isDISS}
+                  onChange={handleChange}
+                  style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }}
+                />
+                <span style={{ color: formData.isDISS ? 'var(--primary)' : 'var(--text-muted)', fontWeight: formData.isDISS ? '600' : '400', transition: 'color 0.2s' }}>
+                  {formData.isDISS ? `Oui — ${formData.numDISS.length} DISS` : 'Non'}
+                </span>
+              </label>
+              {formData.isDISS && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {(formData.numDISS.length > 0 ? formData.numDISS : ['']).map((d, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={d}
+                        onChange={e => {
+                          const updated = [...formData.numDISS];
+                          updated[i] = e.target.value.toUpperCase();
+                          setFormData(prev => ({ ...prev, numDISS: updated }));
+                        }}
+                        placeholder={`N° DISS ${i + 1} (ex: DISS-2024-00${i + 1})`}
+                        style={{ flex: 1, textTransform: 'uppercase' }}
+                      />
+                      <button type="button" onClick={() => {
+                        const updated = formData.numDISS.filter((_, idx) => idx !== i);
+                        setFormData(prev => ({ ...prev, numDISS: updated, isDISS: updated.length > 0 }));
+                      }} style={{ background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)', color: '#f87171', borderRadius: '6px', padding: '0.4rem 0.7rem', cursor: 'pointer' }}>✕</button>
+                    </div>
+                  ))}
+                  <button type="button" onClick={() => setFormData(prev => ({ ...prev, numDISS: [...prev.numDISS, ''] }))} className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', alignSelf: 'flex-start' }}>+ Ajouter un DISS</button>
                 </div>
-              ))}
-              <button type="button" onClick={() => setFormData(prev => ({ ...prev, numDISS: [...prev.numDISS, ''] }))} className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', alignSelf: 'flex-start' }}>+ Ajouter un DISS</button>
+              )}
             </div>
-          )}
-        </div>
 
-        <div className="form-group" style={{ position: 'relative' }}>
-          <label className="form-label">Libellé Dommage</label>
-          <input 
-            type="text" 
-            name="libelleDommage"
-            className="form-control"
-            value={formData.libelleDommage} 
-            onChange={handleLibelleChange} 
-            list="damages-list"
-            placeholder="Tapez pour rechercher un dommage..."
-            autoComplete="off"
-          />
-          <datalist id="damages-list">
-            {damagesList.map((d, i) => (
-              <option key={i} value={d.label}>{d.code}</option>
-            ))}
-          </datalist>
-        </div>
+            <div className="form-group" style={{ position: 'relative' }}>
+              <label className="form-label">Libellé Dommage</label>
+              <input 
+                type="text" 
+                name="libelleDommage"
+                className="form-control"
+                value={formData.libelleDommage} 
+                onChange={handleLibelleChange} 
+                list="damages-list"
+                placeholder="Tapez pour rechercher un dommage..."
+                autoComplete="off"
+              />
+              <datalist id="damages-list">
+                {damagesList.map((d, i) => (
+                  <option key={i} value={d.label}>{d.code}</option>
+                ))}
+              </datalist>
+            </div>
 
+            <div className="form-group">
+              <label className="form-label">Code Dommage</label>
+              <input 
+                type="text" 
+                name="dommage"
+                className="form-control"
+                value={formData.dommage} 
+                onChange={handleChange} 
+                placeholder="Code auto-rempli"
+                style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}
+              />
+            </div>
+
+            {/* TPI */}
+            <div className="form-group">
+              <label className="form-label">TPI ?</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none', marginBottom: formData.isTPI ? '0.75rem' : 0 }}>
+                <input
+                  type="checkbox"
+                  name="isTPI"
+                  checked={formData.isTPI}
+                  onChange={handleChange}
+                  style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }}
+                />
+                <span style={{ color: formData.isTPI ? 'var(--primary)' : 'var(--text-muted)', fontWeight: formData.isTPI ? '600' : '400', transition: 'color 0.2s' }}>
+                  {formData.isTPI ? 'Oui — TPI confirmé' : 'Non'}
+                </span>
+              </label>
+              {formData.isTPI && (
+                <input
+                  type="text"
+                  name="numTPI"
+                  className="form-control"
+                  value={formData.numTPI}
+                  onChange={handleChange}
+                  placeholder="N° TPI (ex: TPI-2024-001)"
+                />
+              )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Statut</label>
+              <select 
+                name="statut" 
+                className="form-control"
+                value={formData.statut} 
+                onChange={handleChange}
+              >
+                <option value="En attente">En attente</option>
+                <option value="En cours">En cours de réparation</option>
+                <option value="Réparé">Réparé</option>
+                <option value="Livré">Livré au client</option>
+                <option value="Rejeté">Garantie refusée</option>
+              </select>
+            </div>
+          </>
+        )}
+
+        {formData.typeDossier === 'MCQ' && (
+          <>
+            <div className="form-group">
+              <label className="form-label">Numéro MCQ *</label>
+              <input 
+                type="text" 
+                name="numeroMCQ"
+                className="form-control"
+                value={formData.numeroMCQ} 
+                onChange={handleChange} 
+                placeholder="Ex: MCQ-2024-001"
+                required
+                style={{ textTransform: 'uppercase' }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Critère *</label>
+              <input 
+                type="text" 
+                name="critere"
+                className="form-control"
+                value={formData.critere} 
+                onChange={handleChange} 
+                placeholder="Critère du rappel"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Statut</label>
+              <select 
+                name="statut" 
+                className="form-control"
+                value={formData.statut} 
+                onChange={handleChange}
+              >
+                <option value="En attente">En attente</option>
+                <option value="En cours">En cours</option>
+                <option value="Réparé">Terminé</option>
+                <option value="Livré">Livré au client</option>
+              </select>
+            </div>
+          </>
+        )}
+      </div>
+
+      {formData.typeDossier === 'Garantie' && (
         <div className="form-group">
-          <label className="form-label">Code Dommage</label>
-          <input 
-            type="text" 
-            name="dommage"
+          <label className="form-label">Description de la panne</label>
+          <textarea 
+            name="descriptionPanne"
             className="form-control"
-            value={formData.dommage} 
+            value={formData.descriptionPanne} 
             onChange={handleChange} 
-            placeholder="Code auto-rempli"
-            style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}
+            placeholder="Décrivez le problème rencontré sur le véhicule..."
+            rows="4"
           />
         </div>
-
-        {/* TPI */}
-        <div className="form-group">
-          <label className="form-label">TPI ?</label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none', marginBottom: formData.isTPI ? '0.75rem' : 0 }}>
-            <input
-              type="checkbox"
-              name="isTPI"
-              checked={formData.isTPI}
-              onChange={handleChange}
-              style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }}
-            />
-            <span style={{ color: formData.isTPI ? 'var(--primary)' : 'var(--text-muted)', fontWeight: formData.isTPI ? '600' : '400', transition: 'color 0.2s' }}>
-              {formData.isTPI ? 'Oui — TPI confirmé' : 'Non'}
-            </span>
-          </label>
-          {formData.isTPI && (
-            <input
-              type="text"
-              name="numTPI"
-              className="form-control"
-              value={formData.numTPI}
-              onChange={handleChange}
-              placeholder="N° TPI (ex: TPI-2024-001)"
-            />
-          )}
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Statut</label>
-          <select 
-            name="statut" 
-            className="form-control"
-            value={formData.statut} 
-            onChange={handleChange}
-          >
-            <option value="En attente">En attente</option>
-            <option value="En cours">En cours de réparation</option>
-            <option value="Réparé">Réparé</option>
-            <option value="Livré">Livré au client</option>
-            <option value="Rejeté">Garantie refusée</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="form-group">
-        <label className="form-label">Description de la panne</label>
-        <textarea 
-          name="descriptionPanne"
-          className="form-control"
-          value={formData.descriptionPanne} 
-          onChange={handleChange} 
-          placeholder="Décrivez le problème rencontré sur le véhicule..."
-          rows="4"
-        />
-      </div>
+      )}
 
       <div className="grid grid-cols-2">
+        {formData.typeDossier === 'Garantie' && (
+          <div className="form-group">
+            <label className="form-label">Date de fin de validité (24j)</label>
+            <DatePicker
+              selected={formData.dateFinGarantie}
+              onChange={(date) => handleDateChange('dateFinGarantie', date)}
+              dateFormat="dd/MM/yyyy"
+              locale="fr"
+              placeholderText="Calculée automatiquement"
+            />
+          </div>
+        )}
+
+        {formData.typeDossier === 'Garantie' && (
+          /* Fiche Pédagogique */
+          <div className="form-group">
+            <label className="form-label">Fiche Pédagogique ?</label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none', marginBottom: formData.hasFichePedagogique ? '0.75rem' : 0 }}>
+              <input
+                type="checkbox"
+                name="hasFichePedagogique"
+                checked={formData.hasFichePedagogique}
+                onChange={handleChange}
+                style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }}
+              />
+              <span style={{ color: formData.hasFichePedagogique ? 'var(--primary)' : 'var(--text-muted)', fontWeight: formData.hasFichePedagogique ? '600' : '400', transition: 'color 0.2s' }}>
+                {formData.hasFichePedagogique ? 'Oui — Fiche présente' : 'Non'}
+              </span>
+            </label>
+            {formData.hasFichePedagogique && (
+              <div className="file-upload-container" style={{ 
+                background: 'rgba(255,255,255,0.05)', 
+                padding: '0.75rem', 
+                borderRadius: 'var(--radius-md)',
+                border: '1px dashed var(--border-color)'
+              }}>
+                <input
+                  type="file"
+                  name="fichePedagogiqueFile"
+                  onChange={handleFileChange}
+                  style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}
+                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                />
+                <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  {initialData.fichePedagogiqueUrl ? 'Remplacer le fichier actuel' : 'Joindre la fiche pédagogique (PDF, Image...)'}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {formData.typeDossier === 'MCQ' && (
+          /* Fiche MCQ */
+          <div className="form-group">
+            <label className="form-label">Fiche MCQ</label>
+            <div className="file-upload-container" style={{ 
+              background: 'rgba(255,255,255,0.05)', 
+              padding: '0.75rem', 
+              borderRadius: 'var(--radius-md)',
+              border: '1px dashed var(--border-color)'
+            }}>
+              <input
+                type="file"
+                name="ficheMCQFile"
+                onChange={handleFileChange}
+                style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+              />
+              <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {initialData.ficheMCQUrl ? 'Remplacer le fichier actuel' : 'Joindre la fiche MCQ (PDF, Image...)'}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Pointage Technicien */}
         <div className="form-group">
-          <label className="form-label">Date de fin de validité (24j)</label>
-          <DatePicker
-            selected={formData.dateFinGarantie}
-            onChange={(date) => handleDateChange('dateFinGarantie', date)}
-            dateFormat="dd/MM/yyyy"
-            locale="fr"
-            placeholderText="Calculée automatiquement"
-          />
+          <label className="form-label">Pointage Technicien ?</label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none', marginBottom: formData.isPointageVerifie ? '0.75rem' : 0 }}>
+            <input
+              type="checkbox"
+              name="isPointageVerifie"
+              checked={formData.isPointageVerifie}
+              onChange={handleChange}
+              style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }}
+            />
+            <span style={{ color: formData.isPointageVerifie ? 'var(--primary)' : 'var(--text-muted)', fontWeight: formData.isPointageVerifie ? '600' : '400', transition: 'color 0.2s' }}>
+              {formData.isPointageVerifie ? 'Pointage vérifié' : 'Non vérifié'}
+            </span>
+          </label>
+          {formData.isPointageVerifie && (
+            <input
+              type="text"
+              name="nomTechnicien"
+              className="form-control"
+              value={formData.nomTechnicien}
+              onChange={handleChange}
+              placeholder="Nom du technicien"
+            />
+          )}
         </div>
+
+        {/* Document PDF Dossier */}
+        <div className="form-group">
+          <label className="form-label">Document PDF du Dossier</label>
+          <div className="file-upload-container" style={{ 
+            background: 'rgba(255,255,255,0.05)', 
+            padding: '0.75rem', 
+            borderRadius: 'var(--radius-md)',
+            border: '1px dashed var(--border-color)'
+          }}>
+            <input
+              type="file"
+              name="documentPdfFile"
+              onChange={handleFileChange}
+              style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}
+              accept=".pdf"
+            />
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={handleAnalyzePDF}
+                disabled={isAnalyzing || !documentPdfFile}
+                style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
+              >
+                {isAnalyzing ? 'Analyse...' : '🔍 Analyser l'ordre de réparation'}
+              </button>
+            </div>
+            <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              {initialData.documentPdfUrl ? 'Remplacer le document PDF' : 'Joindre le document PDF officiel du dossier'}
+            </p>
+          </div>
+        </div>
+      </div>
 
         {/* Fiche Pédagogique */}
         <div className="form-group">
