@@ -356,14 +356,14 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
 
     setFormData(prev => ({
       ...prev,
-      dommage: foundCode || prev.dommage,
+      numeroMCQ: foundCode || prev.numeroMCQ,
       pieces: foundPieces || prev.pieces,
       mainOeuvre: foundMO || prev.mainOeuvre,
       lastExtractedText: extractedText
     }));
 
     const foundFields = [];
-    if (foundCode) foundFields.push('Code Avarie');
+    if (foundCode) foundFields.push('Numéro MCQ');
     if (foundPieces) foundFields.push('Pièces');
     if (foundMO) foundFields.push('Main d\'oeuvre');
 
@@ -896,7 +896,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Code Avarie</label>
+              <label className="form-label">Code Dommage</label>
               <input 
                 type="text" 
                 name="dommage"
@@ -906,6 +906,7 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
                 placeholder="Ex: 93E9"
               />
             </div>
+
 
             <div className="form-group">
               <label className="form-label">Référence des Pièces</label>
