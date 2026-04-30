@@ -23,15 +23,15 @@ const AuthPage = () => {
     setLoading(true);
     try {
       const endpoint = isLogin ? '/api/users/login' : '/api/users/register';
-      const res = await axios.post(endpoint, { email, password });
+      const res = await axios.post(endpoint, { username: email, password });
       
       if (isLogin) {
         localStorage.setItem('token', res.data.token);
         navigate('/');
       } else {
-        // After register, switch to login or auto-login
+        // After register, show message
         setIsLogin(true);
-        setError('Compte créé avec succès ! Veuillez vous connecter.');
+        setError(res.data.message || 'Demande envoyée !');
       }
     } catch (err) {
       setError(err.response?.data || 'Une erreur est survenue');

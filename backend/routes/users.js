@@ -4,35 +4,72 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const nodemailer = require('nodemailer');
+
+// Configuration du transporteur d'email (à configurer dans .env)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
 // POST Inscription
 router.post('/register', async (req, res) => {
   try {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const { username, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({
-      username: req.body.username,
-      password: hashedPassword
+      username: username,
+      password: hashedPassword,
+      isApproved: false // Par défaut, non validé
     });
     const newUser = await user.save();
-    res.status(201).json(newUser);
-  } catch {
-    res.status(500).send();
+
+    // Envoyer un mail à l'admin
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: 'fabienholert@gmail.com',
+      subject: 'Nouvelle demande d\'inscription',
+      text: `Une nouvelle personne souhaite s'inscrire avec l'email : ${username}. Veuillez valider son compte dans la base de données.`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log('Erreur lors de l\'envoi de l\'email:', error);
+      } else {
+        console.log('Email envoyé: ' + info.response);
+      }
+    });
+
+    res.status(201).json({ message: 'Demande d\'inscription envoyée. En attente de validation par l\'administrateur.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur lors de l\'inscription' });
   }
 });
 
 // POST Connexion
 router.post('/login', async (req, res) => {
-  const user = await User.findOne({ username: req.body.username });
-  if (user == null) {
-    return res.status(400).send('Cannot find user');
-  }
   try {
+    const user = await User.findOne({ username: req.body.username });
+    if (user == null) {
+      return res.status(400).send('Utilisateur non trouvé');
+    }
+
+    if (!user.isApproved) {
+      return res.status(403).send('Votre compte est en attente de validation par l\'administrateur.');
+    }
+
     if(await bcrypt.compare(req.body.password, user.password)) {
       const accessToken = jwt.sign({ username: user.username }, process.env.JWT_SECRET);
-      res.json({ accessToken: accessToken });
+      res.json({ token: accessToken }); // Changé en 'token' pour correspondre au frontend
     } else {
-      res.send('Not Allowed');
+      res.status(401).send('Mot de passe incorrect');
     }
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).send();
   }
 });
