@@ -15,38 +15,53 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  console.warn('ATTENTION: EMAIL_USER ou EMAIL_PASS n\'est pas défini dans le fichier .env. Les emails d\'inscription ne pourront pas être envoyés.');
+}
+
 // POST Inscription
 router.post('/register', async (req, res) => {
   try {
     const { username, password } = req.body;
+    
+    // Vérifier si l'utilisateur existe déjà
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Cet email est déjà utilisé.' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({
       username: username,
       password: hashedPassword,
-      isApproved: false // Par défaut, non validé
+      isApproved: false 
     });
     const newUser = await user.save();
 
-    // Envoyer un mail à l'admin
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: 'fabienholert@gmail.com',
-      subject: 'Nouvelle demande d\'inscription',
-      text: `Une nouvelle personne souhaite s'inscrire avec l'email : ${username}. Veuillez valider son compte dans la base de données.`
-    };
+    // Tenter d'envoyer un mail à l'admin
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: 'fabienholert@gmail.com',
+        subject: 'Nouvelle demande d\'inscription',
+        text: `Une nouvelle personne souhaite s'inscrire avec l'email : ${username}. Veuillez valider son compte dans la base de données.`
+      };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log('Erreur lors de l\'envoi de l\'email:', error);
-      } else {
-        console.log('Email envoyé: ' + info.response);
-      }
-    });
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error('ERREUR lors de l\'envoi de l\'email:', error.message);
+        } else {
+          console.log('Email envoyé avec succès à l\'administrateur.');
+        }
+      });
+    } else {
+      console.warn('Email non envoyé : EMAIL_USER ou EMAIL_PASS manquant.');
+    }
 
     res.status(201).json({ message: 'Demande d\'inscription envoyée. En attente de validation par l\'administrateur.' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Erreur lors de l\'inscription' });
+    console.error('Détail de l\'erreur d\'inscription:', err);
+    res.status(500).json({ message: 'Erreur lors de l\'inscription. Veuillez réessayer.' });
   }
 });
 

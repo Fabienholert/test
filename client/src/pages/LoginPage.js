@@ -34,7 +34,8 @@ const AuthPage = () => {
         setError(res.data.message || 'Demande envoyée !');
       }
     } catch (err) {
-      setError(err.response?.data || 'Une erreur est survenue');
+      const errorMsg = err.response?.data?.message || err.response?.data || 'Une erreur est survenue';
+      setError(errorMsg);
       console.error(err);
     } finally {
       setLoading(false);
