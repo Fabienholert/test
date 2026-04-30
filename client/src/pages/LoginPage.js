@@ -2,29 +2,128 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const LoginPage = () => {
+const AuthPage = () => {
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    
+    if (!isLogin && password !== confirmPassword) {
+      setError('Les mots de passe ne correspondent pas');
+      return;
+    }
+
+    setLoading(true);
     try {
-      const res = await axios.post('/api/users/login', { email, password });
-      localStorage.setItem('token', res.data.token);
-      navigate('/');
+      const endpoint = isLogin ? '/api/users/login' : '/api/users/register';
+      const res = await axios.post(endpoint, { email, password });
+      
+      if (isLogin) {
+        localStorage.setItem('token', res.data.token);
+        navigate('/');
+      } else {
+        // After register, switch to login or auto-login
+        setIsLogin(true);
+        setError('Compte créé avec succès ! Veuillez vous connecter.');
+      }
     } catch (err) {
+      setError(err.response?.data || 'Une erreur est survenue');
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-      <button type="submit">Login</button>
-    </form>
+    <div className="auth-container">
+      <div className="glass-panel auth-card">
+        <div className="auth-header">
+          <h1 className="auth-title">Garantie App</h1>
+          <p className="auth-subtitle">
+            {isLogin ? 'Connectez-vous pour continuer' : 'Créez votre compte'}
+          </p>
+        </div>
+
+        <div className="auth-toggle">
+          <button 
+            className={`auth-toggle-btn ${isLogin ? 'active' : ''}`}
+            onClick={() => { setIsLogin(true); setError(''); }}
+          >
+            Connexion
+          </button>
+          <button 
+            className={`auth-toggle-btn ${!isLogin ? 'active' : ''}`}
+            onClick={() => { setIsLogin(false); setError(''); }}
+          >
+            Inscription
+          </button>
+        </div>
+
+        {error && <div className="error-message">{error}</div>}
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input 
+              type="email" 
+              className="form-control"
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              placeholder="votre@email.com" 
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Mot de passe</label>
+            <input 
+              type="password" 
+              className="form-control"
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              placeholder="••••••••" 
+              required
+            />
+          </div>
+
+          {!isLogin && (
+            <div className="form-group">
+              <label className="form-label">Confirmer le mot de passe</label>
+              <input 
+                type="password" 
+                className="form-control"
+                value={confirmPassword} 
+                onChange={(e) => setConfirmPassword(e.target.value)} 
+                placeholder="••••••••" 
+                required
+              />
+            </div>
+          )}
+
+          <button type="submit" className="btn btn-primary w-full" disabled={loading}>
+            {loading ? 'Traitement...' : (isLogin ? 'Se connecter' : "S'inscrire")}
+          </button>
+        </form>
+
+        <div className="auth-footer">
+          <p>
+            {isLogin ? "Vous n'avez pas de compte ?" : "Vous avez déjà un compte ?"}
+            {' '}
+            <span className="auth-link" onClick={() => setIsLogin(!isLogin)}>
+              {isLogin ? "S'inscrire" : "Se connecter"}
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default LoginPage;
+export default AuthPage;

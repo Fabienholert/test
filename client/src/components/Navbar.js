@@ -1,8 +1,14 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   return (
     <nav className="glass-panel" style={{ margin: '1rem', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -14,7 +20,7 @@ function Navbar() {
           Garanties VAG
         </h2>
       </Link>
-      <div style={{ display: 'flex', gap: '1.5rem' }}>
+      <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
         <Link 
           to="/" 
           style={{ 
@@ -35,6 +41,13 @@ function Navbar() {
         >
           Dossiers
         </Link>
+        <button 
+          onClick={handleLogout}
+          className="btn btn-danger"
+          style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
+        >
+          Déconnexion
+        </button>
       </div>
     </nav>
   );
