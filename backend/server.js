@@ -11,6 +11,7 @@ const mongoSanitize = require("express-mongo-sanitize");
 const rateLimit = require("express-rate-limit");
 
 const app = express();
+app.set('trust proxy', 1); // Nécessaire pour express-rate-limit derrière un proxy (Render, etc.)
 
 // ========== MIDDLEWARES DE SÉCURITÉ & OPTIMISATION ==========
 // Compression gzip pour tous les fichiers > 1KB

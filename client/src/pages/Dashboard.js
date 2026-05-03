@@ -11,7 +11,8 @@ function Dashboard() {
   useEffect(() => {
     axios.get('/api/dossiers')
       .then(res => {
-        const data = res.data;
+        const rawData = res.data.data || res.data;
+        const data = Array.isArray(rawData) ? rawData : [];
         setDossiers(data.slice(0, 4)); // Only show 4 recent
         
         // Calculate stats

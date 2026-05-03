@@ -4,7 +4,7 @@ import { registerLocale } from "react-datepicker";
 import { fr } from 'date-fns/locale/fr';
 import "react-datepicker/dist/react-datepicker.css";
 import axios from 'axios';
-import { performClientSideOCR, parseDossierText } from '../utils/ocrClient';
+import { performServerSideOCR, parseDossierText } from '../utils/ocrClient';
 
 // Enregistrer la locale française
 registerLocale('fr', fr);
@@ -173,10 +173,10 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     setFormData(prev => ({ ...prev, lastExtractedText: '' }));
     
     try {
-      // Analyse dans le navigateur pour supporter les PDFs scannés
-      const text = await performClientSideOCR(documentPdfFile);
-      console.log('Texte extrait (Frontend):', text);
-      const data = parseDossierText(text);
+      // Analyse via le serveur (car Tesseract.js a été retiré du client)
+      const data = await performServerSideOCR(documentPdfFile);
+      console.log('Données extraites (Serveur):', data);
+      const text = data.lastExtractedText || '';
       console.log('Données extraites:', data);
 
       setFormData(prev => ({
@@ -263,7 +263,9 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     let extractedText = '';
 
     try {
-      extractedText = await performClientSideOCR(ficheMCQFile);
+      // Pour MCQ, on utilise aussi le serveur
+      const data = await performServerSideOCR(ficheMCQFile);
+      extractedText = data.lastExtractedText || '';
       if (!extractedText || extractedText.trim().length < 10) {
         throw new Error('Texte extrait vide');
       }

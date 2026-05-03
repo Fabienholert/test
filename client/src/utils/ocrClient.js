@@ -110,9 +110,6 @@ export function parseDossierText(text) {
     }
   }
 
-  return result;
-}
-
   // 7. DISS (peut y en avoir plusieurs - on capture le code complet ex: DISS-2024-001)
   // On cherche "DISS" suivi éventuellement d'un espace/tiret et d'un numéro
   const dissMatches = [...text.matchAll(/DISS[\s\-:]*([\w\-]+)/gi)];

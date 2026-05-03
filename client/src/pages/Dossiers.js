@@ -26,7 +26,8 @@ function Dossiers() {
     setLoading(true);
     axios.get('/api/dossiers')
       .then(res => {
-        setDossiers(res.data);
+        const data = res.data.data || res.data;
+        setDossiers(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(err => {
