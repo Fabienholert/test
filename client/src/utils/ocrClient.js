@@ -1,103 +1,116 @@
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
-import { createWorker } from 'tesseract.js';
 
-// Setup pdf.js worker - Stable version with high compatibility
+// Setup pdf.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
 
-export async function performClientSideOCR(file) {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  let fullText = '';
+/**
+ * Envoyer le PDF au serveur pour analyse OCR côté serveur (OPTIMISÉ)
+ * Le serveur effectue l'OCR avec Tesseract pour de meilleurs résultats
+ */
+export async function performServerSideOCR(file) {
+  try {
+    const formData = new FormData();
+    formData.append('documentPdfFile', file);
 
-  const worker = await createWorker('fra', 1, {
-    logger: m => console.log('OCR Progress:', m.status, Math.round(m.progress * 100) + '%')
-  }); 
+    const response = await fetch('/api/dossiers/analyze', {
+      method: 'POST',
+      body: formData,
+      signal: AbortSignal.timeout(60000) // 60s timeout
+    });
 
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    
-    // 1. Essayer d'extraire le texte numérique (si le PDF n'est pas un scan)
-    const textContent = await page.getTextContent();
-    const digitalText = textContent.items.map(item => item.str).join(' ');
-    
-    if (digitalText.trim().length > 20) {
-      console.log(`Page ${i}: Texte numérique détecté (plus précis).`);
-      fullText += digitalText + '\n';
-    } else {
-      // 2. Fallback OCR si c'est un scan (image)
-      console.log(`Page ${i}: Aucun texte numérique. Lancement de l'OCR...`);
-      const viewport = page.getViewport({ scale: 3.0 });
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-
-      await page.render({ canvasContext: context, viewport }).promise;
-      const { data: { text } } = await worker.recognize(canvas);
-      fullText += text + '\n';
+    if (!response.ok) {
+      throw new Error(`Erreur serveur: ${response.status}`);
     }
-  }
 
-  await worker.terminate();
-  return fullText;
+    return await response.json();
+  } catch (error) {
+    console.error('❌ Erreur OCR serveur:', error);
+    throw error;
+  }
 }
 
+/**
+ * Extraire texte brut du PDF (pour MCQ)
+ */
+export async function extractTextFromPDF(file) {
+  try {
+    const formData = new FormData();
+    formData.append('ficheMCQFile', file);
+
+    const response = await fetch('/api/dossiers/analyzeMCQ', {
+      method: 'POST',
+      body: formData,
+      signal: AbortSignal.timeout(60000)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur serveur: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.text;
+  } catch (error) {
+    console.error('❌ Erreur extraction texte:', error);
+    throw error;
+  }
+}
+
+/**
+ * Parser des données depuis le texte extrait
+ * Utilitaire côté client pour traitement rapide
+ */
 export function parseDossierText(text) {
   const result = {};
-  console.log('--- DEBUT DU PARSING SEQUENTIEL ---');
   
   const cleanText = text.replace(/\s\s+/g, ' ');
   const noSpaceText = text.replace(/\s+/g, '');
   
-  // 1. OR N° (6 chiffres, généralement commence par 14)
+  // 1. OR N°
   const orMatch = cleanText.match(/\b(14\d{4})\b/) || cleanText.match(/\b(\d{6})\b/);
   if (orMatch) {
     result.numero = orMatch[1];
-    console.log('OR N° trouvé:', result.numero);
-    
-    // On essaie de trouver la date d'impression juste APRES le OR N° dans le texte
     const textAfterOr = text.substring(text.indexOf(orMatch[1]));
     const nextDate = textAfterOr.match(/\d{2}[\/\.-]\d{2}[\/\.-]\d{4}/);
     if (nextDate) {
       result.dateImpression = nextDate[0].replace(/[\.-]/g, '/');
-      // Pour le formulaire, la date d'entrée est souvent la même ou proche
       result.dateEntree = result.dateImpression; 
     }
   }
 
-  // 2. Châssis (VSS=SEAT/CUPRA, TMB=Škoda, WVW=Volkswagen)
+  // 2. Châssis (VIN)
   const vinMatch = noSpaceText.match(/(VSS|TMB|WVW)[A-Z0-9]{14}/i);
   if (vinMatch) {
     result.vin = vinMatch[0].toUpperCase();
     const prefix = vinMatch[1].toUpperCase();
-    if (prefix === 'WVW') {
-      result.marque = 'Volkswagen';
-    } else if (prefix === 'TMB') {
-      result.marque = 'Škoda';
-    } else if (prefix === 'VSS') {
-      result.marque = 'SEAT'; // SEAT ou CUPRA — à vérifier manuellement si besoin
-    }
-    console.log('Châssis trouvé:', result.vin, '→ Marque détectée:', result.marque);
+    result.marque = prefix === 'WVW' ? 'Volkswagen' : prefix === 'TMB' ? 'Škoda' : 'SEAT';
   }
 
-  // 3. Immatriculation (Souvent après le châssis selon l'utilisateur)
+  // 3. Immatriculation
   const immatMatch = cleanText.match(/[A-Z]{2}[-\s]?\d{3}[-\s]?[A-Z]{2}/i) || 
                      cleanText.match(/\d{3}\s[A-Z]{2,3}\s\d{2}/i);
   if (immatMatch) {
     result.immatriculation = immatMatch[0].toUpperCase().replace(/[-\s]/g, '-');
   }
 
-  // 3.5 Kilométrage (juste en dessous de KM, souvent manuscrit)
+  // 4. Kilométrage
   const lines = text.split('\n');
   for (let i = 0; i < lines.length; i++) {
-    const lineLower = lines[i].toLowerCase();
-    // On cherche le mot isolé "km" ou "kilom"
-    if (lineLower.match(/\bkm\b/) || lineLower.includes('kilom')) {
-      // On regarde la ligne suivante (ou la 2e si ligne vide)
+    if (lines[i].toLowerCase().match(/\bkm\b/) || lines[i].toLowerCase().includes('kilom')) {
       for (let j = 1; j <= 2; j++) {
         if (lines[i + j]) {
-          // Retire tous les espaces (ex: "12 000" -> "12000") et corrige 'o' lu au lieu de 0
-          let lineBelowStripped = lines[i + j].replace(/\s+/g, '').replace(/[Oo]/g, '0');
+          const match = lines[i + j].replace(/\s+/g, '').replace(/[Oo]/g, '0').match(/^(\d{1,7})(?:km)?$/i);
+          if (match) {
+            result.kilometrage = parseInt(match[1], 10);
+            break;
+          }
+        }
+      }
+      if (result.kilometrage) break;
+    }
+  }
+
+  return result;
+}
           // Le nombre doit être seul sur la ligne (ou suivi éventuellement de "km")
           const match = lineBelowStripped.match(/^(\d{1,7})(?:km)?$/i);
           if (match) {

@@ -1,15 +1,29 @@
 {
   "name": "audit-garantie-vw-monorepo",
   "version": "1.0.0",
+  "description": "Application de gestion d'audits de garantie VW - Optimisée",
   "private": true,
   "scripts": {
-    "start": "node backend/server.js",
-    "install-client": "cd client && npm install",
+    "start": "cd backend && npm start",
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd client && npm start\"",
     "build": "cd client && npm install && npm run build",
-    "heroku-postbuild": "npm run build" 
+    "postinstall": "cd backend && npm install && cd ../client && npm install",
+    "heroku-postbuild": "npm run build"
   },
-  "dependencies": {},
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
   "engines": {
-    "node": "18.x"
-  }
+    "node": ">=18.x",
+    "npm": ">=9.x"
+  },
+  "keywords": [
+    "volkswagen",
+    "audit",
+    "garantie",
+    "dossier",
+    "ocr"
+  ],
+  "author": "Holert Fabien",
+  "license": "MIT"
 }
