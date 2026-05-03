@@ -34,17 +34,33 @@ router.post('/register', async (req, res) => {
     const user = new User({
       username: username,
       password: hashedPassword,
-      isApproved: true 
+      isApproved: false 
     });
     const newUser = await user.save();
 
     // Tenter d'envoyer un mail à l'admin
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      const baseUrl = process.env.BASE_URL || `http://${req.get('host')}`;
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: 'fabienholert@gmail.com',
-        subject: 'Nouvelle demande d\'inscription',
-        text: `Une nouvelle personne souhaite s'inscrire avec l'email : ${username}. Veuillez valider son compte dans la base de données.`
+        subject: '🚀 Nouvelle demande d\'inscription - Audit Garantie',
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+            <h2 style="color: #333;">Nouvelle inscription</h2>
+            <p>Un nouvel utilisateur souhaite accéder à l'application :</p>
+            <p><strong>Email :</strong> ${username}</p>
+            <div style="margin-top: 30px; text-align: center;">
+              <a href="${baseUrl}/api/users/approve/${newUser._id}" 
+                 style="background-color: #4CAF50; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                 APPROUVER L'UTILISATEUR
+              </a>
+            </div>
+            <p style="margin-top: 30px; font-size: 12px; color: #999;">
+              Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.
+            </p>
+          </div>
+        `
       };
 
       transporter.sendMail(mailOptions, (error, info) => {
@@ -66,6 +82,33 @@ router.post('/register', async (req, res) => {
 });
 
 // POST Connexion
+// GET Approbation (via lien email)
+router.get('/approve/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).send('Utilisateur non trouvé');
+    }
+
+    user.isApproved = true;
+    await user.save();
+
+    res.send(`
+      <div style="font-family: sans-serif; text-align: center; margin-top: 50px;">
+        <h1 style="color: #4CAF50;">Utilisateur approuvé !</h1>
+        <p>L'utilisateur <strong>${user.username}</strong> peut maintenant se connecter.</p>
+        <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}" 
+           style="display: inline-block; padding: 10px 20px; background: #2196F3; color: white; text-decoration: none; border-radius: 5px;">
+           Retour à l'application
+        </a>
+      </div>
+    `);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Erreur lors de l\'approbation');
+  }
+});
+
 router.post('/login', async (req, res) => {
   try {
     const user = await User.findOne({ username: req.body.username });
