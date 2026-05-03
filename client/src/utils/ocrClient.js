@@ -98,7 +98,8 @@ export function parseDossierText(text) {
     if (lines[i].toLowerCase().match(/\bkm\b/) || lines[i].toLowerCase().includes('kilom')) {
       for (let j = 1; j <= 2; j++) {
         if (lines[i + j]) {
-          const match = lines[i + j].replace(/\s+/g, '').replace(/[Oo]/g, '0').match(/^(\d{1,7})(?:km)?$/i);
+          const lineBelowStripped = lines[i + j].replace(/\s+/g, '').replace(/[Oo]/g, '0');
+          const match = lineBelowStripped.match(/^(\d{1,7})(?:km)?$/i);
           if (match) {
             result.kilometrage = parseInt(match[1], 10);
             break;
@@ -111,72 +112,6 @@ export function parseDossierText(text) {
 
   return result;
 }
-          // Le nombre doit être seul sur la ligne (ou suivi éventuellement de "km")
-          const match = lineBelowStripped.match(/^(\d{1,7})(?:km)?$/i);
-          if (match) {
-            result.kilometrage = parseInt(match[1], 10);
-            break;
-          }
-        }
-      }
-      if (result.kilometrage) break;
-    }
-  }
-  if (!result.kilometrage) {
-    const kmMatch = cleanText.match(/(\d{1,7})\s*km/i) || cleanText.match(/kilométrage\s*:?\s*(\d{1,7})/i);
-    if (kmMatch) result.kilometrage = parseInt(kmMatch[1]);
-  }
-
-  // 4. Lettre Moteur et Modèle (modèle juste après la lettre moteur)
-  for (let i = 0; i < lines.length; i++) {
-    const lineLower = lines[i].toLowerCase();
-    if (lineLower.includes('lettre') && lineLower.includes('moteur')) {
-      // On regarde la ligne courante et les 2 en dessous
-      const searchLines = lines.slice(i, i + 3);
-      for (let j = 0; j < searchLines.length; j++) {
-        const line = searchLines[j];
-        const match = line.match(/\b([A-Z]{3,4})\b/);
-        // Exclure des mots courants
-        if (match && !['TMB', 'WVW', 'VSS', 'SEAT', 'AUTO', 'KIL', 'MOT', 'LETT', 'TYPE'].includes(match[1].toUpperCase())) {
-          result.lettreMoteur = match[1].toUpperCase();
-          
-          // Le modèle est juste après les lettres moteurs
-          let afterLetters = line.substring(match.index + match[0].length).trim();
-          afterLetters = afterLetters.replace(/^(?:modèle|model)?\s*[:\/\-]*\s*/i, '').trim();
-          
-          if (afterLetters && afterLetters.length >= 2) {
-            result.modele = afterLetters;
-          } else {
-            // Si vide, on regarde la ligne suivante
-            const nextLine = (searchLines[j + 1] || '').trim();
-            if (nextLine && nextLine.length >= 2) {
-              result.modele = nextLine.replace(/^(?:modèle|model)?\s*[:\/\-]*\s*/i, '').trim();
-            }
-          }
-          break;
-        }
-      }
-      if (result.lettreMoteur) break;
-    }
-  }
-
-  // 5. Type
-  for (let i = 0; i < lines.length; i++) {
-    const lineLower = lines[i].toLowerCase();
-    if (lineLower.includes('type')) {
-      const typeMatch = lines[i].match(/type\s*[:\-]?\s*([A-Z0-9]{3,6})/i);
-      if (typeMatch) {
-        result.typeVehicule = typeMatch[1].toUpperCase();
-        break;
-      } else {
-        const nextLineMatch = (lines[i + 1] || '').match(/^([A-Z0-9]{3,6})$/i);
-        if (nextLineMatch) {
-          result.typeVehicule = nextLineMatch[1].toUpperCase();
-          break;
-        }
-      }
-    }
-  }
 
   // 7. DISS (peut y en avoir plusieurs - on capture le code complet ex: DISS-2024-001)
   // On cherche "DISS" suivi éventuellement d'un espace/tiret et d'un numéro
