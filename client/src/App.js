@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import LoginPage from "./pages/LoginPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Lazy loading des pages pour optimiser le bundle initial
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -38,9 +39,9 @@ const AppContent = () => {
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/dossiers" element={<Dossiers />} />
-            <Route path="/dossiers/:id" element={<DossierDetails />} />
+            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/dossiers" element={<ProtectedRoute><Dossiers /></ProtectedRoute>} />
+            <Route path="/dossiers/:id" element={<ProtectedRoute><DossierDetails /></ProtectedRoute>} />
           </Routes>
         </Suspense>
       </div>
