@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: audit-garantie-vw-reborn
+    name: audit-garantie-vw
     runtime: node
     plan: free
     region: frankfurt
@@ -11,8 +11,10 @@ services:
       - key: NODE_ENV
         value: production
       - key: MONGO_URI
-        fromDatabase:
-          name: audit-garantie-vw-db
-          property: connectionString
+        sync: false # À configurer dans le dashboard Render
       - key: JWT_SECRET
         generateValue: true
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
