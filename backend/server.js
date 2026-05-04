@@ -81,7 +81,7 @@ async function connectDB() {
     await Dossier.collection.createIndex({ marque: 1 });
     await Dossier.collection.createIndex({ statut: 1 });
     await Dossier.collection.createIndex({ dateCreation: -1 });
-    await User.collection.createIndex({ email: 1 }, { unique: true });
+    await User.collection.createIndex({ username: 1 }, { unique: true });
     console.log("✅ Indices MongoDB créés");
   } catch (err) {
     console.error("❌ Erreur de connexion à MongoDB:", err);
