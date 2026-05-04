@@ -48,6 +48,16 @@ const { MongoMemoryServer } = require("mongodb-memory-server");
 async function connectDB() {
   try {
     let uri = process.env.MONGO_URI;
+    
+    // Log de diagnostic (affiche les clés dispo, pas les valeurs)
+    console.log("🔍 Clés d'environnement disponibles:", Object.keys(process.env).filter(k => !k.includes("SECRET") && !k.includes("PASS")));
+    
+    if (!uri) {
+      console.error("❌ ERREUR CRITIQUE: La variable MONGO_URI est undefined sur Render.");
+      console.log("Vérifiez l'onglet 'Environment' dans le dashboard Render.");
+      return; // Stop ici au lieu de crash sur mongoose.connect
+    }
+
     if (uri && uri.includes("localhost")) {
       console.log(
         "Démarrage de MongoDB en mémoire pour le développement local...",
@@ -58,8 +68,6 @@ async function connectDB() {
 
     // Options optimisées
     await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
     });
