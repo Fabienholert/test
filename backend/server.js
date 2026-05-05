@@ -11,7 +11,7 @@ const mongoSanitize = require("express-mongo-sanitize");
 const rateLimit = require("express-rate-limit");
 
 const app = express();
-app.set('trust proxy', 1); // Nécessaire pour express-rate-limit derrière un proxy (Render, etc.)
+app.set("trust proxy", 1); // Nécessaire pour express-rate-limit derrière un proxy (Render, etc.)
 
 // ========== MIDDLEWARES DE SÉCURITÉ & OPTIMISATION ==========
 // Compression gzip pour tous les fichiers > 1KB
@@ -48,12 +48,19 @@ const { MongoMemoryServer } = require("mongodb-memory-server");
 async function connectDB() {
   try {
     let uri = process.env.MONGO_URI;
-    
+
     // Log de diagnostic (affiche les clés dispo, pas les valeurs)
-    console.log("🔍 Clés d'environnement disponibles:", Object.keys(process.env).filter(k => !k.includes("SECRET") && !k.includes("PASS")));
-    
+    console.log(
+      "🔍 Clés d'environnement disponibles:",
+      Object.keys(process.env).filter(
+        (k) => !k.includes("SECRET") && !k.includes("PASS"),
+      ),
+    );
+
     if (!uri) {
-      console.error("❌ ERREUR CRITIQUE: La variable MONGO_URI est undefined sur Render.");
+      console.error(
+        "❌ ERREUR CRITIQUE: La variable MONGO_URI est undefined sur Render.",
+      );
       console.log("Vérifiez l'onglet 'Environment' dans le dashboard Render.");
       return; // Stop ici au lieu de crash sur mongoose.connect
     }
@@ -74,14 +81,12 @@ async function connectDB() {
 
     console.log("✅ Connexion à MongoDB réussie !");
 
-    // Créer les indices
+    // Créer les indices (uniquement pour Dossier, User n'est plus utilisé)
     const Dossier = require("./models/Dossier");
-    const User = require("./models/User");
     await Dossier.collection.createIndex({ numero: 1 }, { unique: true });
     await Dossier.collection.createIndex({ marque: 1 });
     await Dossier.collection.createIndex({ statut: 1 });
     await Dossier.collection.createIndex({ dateCreation: -1 });
-    await User.collection.createIndex({ username: 1 }, { unique: true });
     console.log("✅ Indices MongoDB créés");
   } catch (err) {
     console.error("❌ Erreur de connexion à MongoDB:", err);
@@ -90,13 +95,11 @@ async function connectDB() {
 }
 connectDB();
 
-// ========== ROUTES API ==========
+// ========== ROUTES API (Authentification désactivée) ==========
 const dossiersRouter = require("./routes/dossiers");
-const usersRouter = require("./routes/users");
 const referencesRouter = require("./routes/references");
 
 app.use("/api/dossiers", dossiersRouter);
-app.use("/api/users", usersRouter);
 app.use("/api/references", referencesRouter);
 
 // Health check

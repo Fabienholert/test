@@ -1,9 +1,9 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-
+/**
+ * Composant pour protéger les routes (Désactivé temporairement).
+ * Retourne directement les composants enfants sans vérification de token.
+ */
 const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/login" />;
+  return children;
 };
 
 export default PrivateRoute;
