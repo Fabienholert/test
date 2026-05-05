@@ -3,7 +3,6 @@ import { fr } from "date-fns/locale/fr";
 import { useEffect, useState } from "react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { performServerSideOCR } from "../utils/ocrClient";
 
 // Enregistrer la locale française
 registerLocale("fr", fr);
@@ -191,18 +190,19 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
 
     setStatusMessage({
       type: "success",
-      text: "Lancement de l'analyse OCR locale (peut prendre 10-20s)...",
+      text: "Lancement de l'analyse OCR sur le serveur...",
     });
 
     setIsAnalyzing(true);
     setFormData((prev) => ({ ...prev, lastExtractedText: "" }));
 
     try {
-      // Analyse via le serveur (car Tesseract.js a été retiré du client)
-      const data = await performServerSideOCR(documentPdfFile);
-      console.log("Données extraites (Serveur):", data);
+      const uploadData = new FormData();
+      uploadData.append("documentPdfFile", documentPdfFile);
+
+      const res = await axios.post("/api/dossiers/analyze", uploadData);
+      const data = res.data;
       const text = data.lastExtractedText || "";
-      console.log("Données extraites:", data);
 
       setFormData((prev) => ({
         ...prev,
@@ -247,46 +247,14 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
             : "Analyse terminée, mais aucune information n'a été détectée. Veuillez vérifier la qualité du document.",
       });
     } catch (err) {
-      console.error("Erreur OCR Frontend:", err);
-      let errorDetail = "Erreur d'analyse locale.";
-      if (err.message?.includes("worker"))
-        errorDetail =
-          "Erreur de chargement du moteur PDF (Vérifiez votre connexion internet).";
+      console.error("Erreur OCR:", err);
+      const errorMsg =
+        err.response?.data?.message || "Erreur lors de l'analyse serveur.";
 
       setStatusMessage({
         type: "error",
-        text: `${errorDetail} Tentative via le serveur...`,
+        text: `${errorMsg} Veuillez remplir les champs manuellement.`,
       });
-
-      // Fallback vers le serveur
-      const uploadData = new FormData();
-      uploadData.append("documentPdfFile", documentPdfFile);
-
-      try {
-        const res = await axios.post("/api/dossiers/analyze", uploadData);
-        const data = res.data;
-
-        setFormData((prev) => ({
-          ...prev,
-          numero: data.numero || prev.numero,
-          immatriculation: data.immatriculation || prev.immatriculation,
-          kilometrage: data.kilometrage || prev.kilometrage,
-          dateEntree:
-            data.dateEntree && data.dateEntree.includes("/")
-              ? new Date(data.dateEntree.split("/").reverse().join("-"))
-              : prev.dateEntree,
-        }));
-        setStatusMessage({
-          type: "success",
-          text: "Analyse serveur terminée.",
-        });
-      } catch (serverErr) {
-        console.error(serverErr);
-        setStatusMessage({
-          type: "error",
-          text: "Toutes les méthodes d'analyse ont échoué. Veuillez remplir les champs manuellement.",
-        });
-      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -319,30 +287,25 @@ function DossierForm({ initialData = {}, onSubmit, onCancel, isLoading }) {
     let extractedText = "";
 
     try {
-      // Pour MCQ, on utilise aussi le serveur
-      const data = await performServerSideOCR(ficheMCQFile);
-      extractedText = data.lastExtractedText || "";
-      if (!extractedText || extractedText.trim().length < 10) {
-        throw new Error("Texte extrait vide");
-      }
-    } catch (err) {
-      console.log("Fallback serveur pour le PDF MCQ...");
       const formDataUpload = new FormData();
       formDataUpload.append("ficheMCQFile", ficheMCQFile);
-      try {
-        const res = await axios.post(
-          "/api/dossiers/analyzeMCQ",
-          formDataUpload,
-        );
-        extractedText = res.data.text || "";
-      } catch (serverErr) {
-        setStatusMessage({
-          type: "error",
-          text: "Impossible de lire le fichier PDF (localement et serveur).",
-        });
-        setIsAnalyzing(false);
-        return;
+
+      const res = await axios.post("/api/dossiers/analyzeMCQ", formDataUpload);
+      extractedText = res.data.text || "";
+
+      if (!extractedText || extractedText.trim().length < 10) {
+        throw new Error("Le texte extrait est vide ou trop court.");
       }
+    } catch (err) {
+      console.error("Erreur MCQ:", err);
+      setStatusMessage({
+        type: "error",
+        text:
+          err.response?.data?.message ||
+          "Impossible de lire le fichier MCQ sur le serveur.",
+      });
+      setIsAnalyzing(false);
+      return;
     }
 
     console.log("Texte MCQ extrait:", extractedText);

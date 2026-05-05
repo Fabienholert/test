@@ -122,7 +122,7 @@ router.post("/analyze", upload.single("documentPdfFile"), async (req, res) => {
       fs.unlinkSync(req.file.path);
     }
 
-    res.status(500).json({ message: "Erreur lors de l'analyse du PDF" });
+    res.status(500).json({ message: `Erreur analyse: ${err.message}` });
   }
 });
 
