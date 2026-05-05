@@ -1,41 +1,61 @@
 const { createWorker } = require("tesseract.js");
-const pdf = require("pdf-parse"); // A Node.js library to parse PDF content
-
-// Initialize Tesseract worker (can be reused for performance)
-let worker;
-async function getTesseractWorker() {
-  if (!worker) {
-    // Ensure Tesseract data for French is available.
-    // You might need to configure Tesseract.js to download language data if not present.
-    worker = await createWorker("fra"); // 'fra' for French language
-  }
-  return worker;
-}
+const pdfParse = require("pdf-parse");
 
 // Function to extract raw text from PDF (using pdf-parse for digital text, Tesseract for scanned)
 async function extractRawTextFromPDF(buffer) {
+  console.log(
+    " début de l'extraction du texte (Taille buffer:",
+    buffer.length,
+    ")",
+  );
+
   try {
-    // Try to extract digital text first
-    const data = await pdf(buffer);
-    if (data.text && data.text.trim().length > 20) {
-      console.log("Digital text extracted from PDF.");
-      return data.text;
+    // 1. Tentative d'extraction numérique (Rapide et léger)
+    if (typeof pdfParse !== "function") {
+      console.error("❌ Erreur: pdf-parse n'est pas chargé comme une fonction");
+      throw new Error("Moteur PDF mal configuré sur le serveur.");
     }
+
+    const data = await pdfParse(buffer);
+    const text = data.text ? data.text.trim() : "";
+
+    if (text.length > 20) {
+      console.log(
+        "✅ Texte numérique extrait avec succès (",
+        text.length,
+        "caractères)",
+      );
+      return text;
+    }
+
+    console.log("⚠️ Texte numérique trop court, passage à l'OCR...");
   } catch (digitalErr) {
-    console.warn(
-      "Could not extract digital text, falling back to OCR:",
-      digitalErr.message,
-    );
-    // Continue to OCR if digital extraction fails or is insufficient
+    console.warn("❌ Échec extraction numérique:", digitalErr.message);
   }
 
-  // Fallback to Tesseract OCR for scanned PDFs
-  console.log("Performing Tesseract OCR on PDF (may take a while)...");
-  const tesseractWorker = await getTesseractWorker();
-  const {
-    data: { text },
-  } = await tesseractWorker.recognize(buffer);
-  return text;
+  // 2. Fallback OCR (Attention: Tesseract.js nécessite une image, pas un PDF)
+  // Si le PDF est un scan, Tesseract.js ne pourra pas le lire directement depuis le buffer PDF.
+  // Pour éviter un crash (502), nous allons essayer de gérer le worker proprement.
+  let worker = null;
+  try {
+    console.log(
+      "🚀 Lancement OCR Tesseract (ceci peut être gourmand en RAM)...",
+    );
+    worker = await createWorker("fra");
+
+    // Note: Si 'buffer' est un PDF, recognize() risque d'échouer ou de crash le serveur.
+    // Idéalement, il faudrait convertir le PDF en image ici.
+    const {
+      data: { text },
+    } = await worker.recognize(buffer);
+
+    await worker.terminate();
+    return text || "";
+  } catch (ocrErr) {
+    console.error("❌ Échec OCR Tesseract:", ocrErr.message);
+    if (worker) await worker.terminate();
+    return ""; // Retourne vide plutôt que de faire crash le serveur
+  }
 }
 
 // Function to parse extracted text and extract specific dossier data
