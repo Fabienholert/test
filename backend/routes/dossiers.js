@@ -6,10 +6,10 @@ const path = require("path");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 const { extractDataFromPDF, extractRawTextFromPDF } = require("../utils/ocr");
-const auth = require("../middleware/auth");
+// const auth = require("../middleware/auth");
 
-// Appliquer le middleware d'authentification à toutes les routes ci-dessous
-router.use(auth);
+// Authentification désactivée temporairement
+// router.use(auth);
 
 // ========== CONFIGURATION MULTER OPTIMISÉE ==========
 // Créer le dossier uploads s'il n'existe pas
