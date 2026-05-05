@@ -10,13 +10,14 @@ async function extractDataFromPDF(buffer) {
   const result = {};
 
   // Nettoyage modéré pour garder les slashs des dates et tirets
-  const cleanText = text.replace(/[^A-Z0-9\s\/-]/gi, " ");
+  // On garde aussi les points et virgules pour le kilométrage
+  const cleanText = text.replace(/[^A-Z0-9\s\/.,-]/gi, " ");
   const noSpaceText = text.replace(/\s/g, "");
 
   // 1. OR N° (6 chiffres, généralement commence par 14)
   const orMatch =
-    cleanText.match(/\b(14\d{4})\b/) || cleanText.match(/\b(\d{6})\b/);
-  if (orMatch) result.numero = orMatch[1];
+    cleanText.match(/\b(14\d{4,6})\b/) || cleanText.match(/\b(\d{6,8})\b/);
+  if (orMatch) result.numero = orMatch[1].trim();
 
   // 2. Châssis (VIN - 17 caractères, commence par VSS, TMB ou WVW)
   const vinMatch = noSpaceText.match(/(VSS|TMB|WVW)[A-Z0-9]{14}/i);
@@ -24,8 +25,8 @@ async function extractDataFromPDF(buffer) {
 
   // 3. Immatriculation & Dates
   const immatMatch =
-    cleanText.match(/[A-Z]{2}[-\s]?\d{3}[-\s]?[A-Z]{2}/i) ||
-    cleanText.match(/\d{3}\s[A-Z]{2,3}\s\d{2}/i);
+    cleanText.match(/\b[A-Z]{2}[-\s]?\d{3}[-\s]?[A-Z]{2}\b/i) ||
+    cleanText.match(/\b\d{3}\s[A-Z]{2,3}\s\d{2}\b/i);
   if (immatMatch)
     result.immatriculation = immatMatch[0].toUpperCase().replace(/[-\s]/g, "-");
 
@@ -38,6 +39,12 @@ async function extractDataFromPDF(buffer) {
     else result.dateEntree = dateMatches[0];
   }
 
+  // Recherche spécifique de la date d'entrée si libellée
+  const entryDateMatch = text.match(
+    /(?:entree|entrée|reçu|le)\s*[:\-]?\s*(\d{2}\/\d{2}\/\d{4})/i,
+  );
+  if (entryDateMatch) result.dateEntree = entryDateMatch[1];
+
   // 4. Kilométrage (juste en dessous de KM, souvent manuscrit)
   const lines = text.split("\n");
   for (let i = 0; i < lines.length; i++) {
@@ -49,7 +56,8 @@ async function extractDataFromPDF(buffer) {
         if (lines[i + j]) {
           // Retire tous les espaces (ex: "12 000" -> "12000") et corrige les 'o' manuscrits lus au lieu de zéros
           let lineBelowStripped = lines[i + j]
-            .replace(/\s+/g, "")
+            .trim()
+            .replace(/[\s.,]+/g, "")
             .replace(/[Oo]/g, "0");
           // Le nombre doit être seul sur la ligne (ou suivi éventuellement de "km")
           const match = lineBelowStripped.match(/^(\d{1,7})(?:km)?$/i);
@@ -65,15 +73,15 @@ async function extractDataFromPDF(buffer) {
   // Fallback
   if (!result.kilometrage) {
     const kmMatch =
-      cleanText.match(/(\d{1,7})\s*km/i) ||
-      cleanText.match(/kilométrage\s*:?\s*(\d{1,7})/i);
+      cleanText.replace(/\s/g, "").match(/(\d{1,7})km/i) ||
+      cleanText.match(/(?:kilométrage|km)\s*[:\-]?\s*(\d{1,7})/i);
     if (kmMatch) result.kilometrage = parseInt(kmMatch[1]);
   }
 
   // 5. Lettre Moteur et Modèle (modèle juste après la lettre moteur)
   for (let i = 0; i < lines.length; i++) {
     const lineLower = lines[i].toLowerCase();
-    if (lineLower.includes("lettre") && lineLower.includes("moteur")) {
+    if (lineLower.includes("moteur") || lineLower.includes("type/lb")) {
       // On regarde la ligne courante et les 2 en dessous
       const searchLines = lines.slice(i, i + 3);
       for (let j = 0; j < searchLines.length; j++) {
