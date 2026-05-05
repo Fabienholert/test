@@ -43,8 +43,6 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(mongoSanitize()); // Protection NoSQL injection
 
 // ========== CONNEXION MONGODB OPTIMISÉE ==========
-const { MongoMemoryServer } = require("mongodb-memory-server");
-
 async function connectDB() {
   try {
     let uri = process.env.MONGO_URI;
@@ -59,27 +57,45 @@ async function connectDB() {
 
     if (!uri) {
       console.error(
-        "❌ ERREUR CRITIQUE: La variable MONGO_URI est undefined sur Render.",
+        "❌ ERREUR CRITIQUE: La variable MONGO_URI est undefined.",
       );
-      console.log("Vérifiez l'onglet 'Environment' dans le dashboard Render.");
-      return; // Stop ici au lieu de crash sur mongoose.connect
+      console.log("Vérifiez votre fichier .env ou l'onglet 'Environment' dans le dashboard Render.");
+      process.exit(1);
     }
 
-    if (uri && uri.includes("localhost")) {
+    // Utilisation de MongoDB en mémoire uniquement pour le développement local pur si explicitement défini
+    if (uri && uri.includes("localhost") && process.env.NODE_ENV !== "production") {
       console.log(
         "Démarrage de MongoDB en mémoire pour le développement local...",
       );
+      const { MongoMemoryServer } = require("mongodb-memory-server");
       const mongoServer = await MongoMemoryServer.create();
       uri = mongoServer.getUri();
     }
 
-    // Options optimisées
-    await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
+    // Gestion des événements de connexion Mongoose pour la résilience
+    mongoose.connection.on('connected', () => {
+      console.log('✅ Mongoose connecté à MongoDB');
     });
 
-    console.log("✅ Connexion à MongoDB réussie !");
+    mongoose.connection.on('error', (err) => {
+      console.error('❌ Mongoose erreur de connexion:', err.message);
+    });
+
+    mongoose.connection.on('disconnected', () => {
+      console.log('⚠️ Mongoose déconnecté. Tentative de reconnexion...');
+    });
+
+    // Options optimisées pour production (Render) et Atlas
+    const mongooseOptions = {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      maxPoolSize: 10, // Limite le nombre de connexions pour la version gratuite Render/Atlas
+      minPoolSize: 2,
+      family: 4 // Force IPv4, évite des problèmes DNS potentiels sur certains environnements
+    };
+
+    await mongoose.connect(uri, mongooseOptions);
 
     // Créer les indices (uniquement pour Dossier, User n'est plus utilisé)
     const Dossier = require("./models/Dossier");
@@ -87,9 +103,9 @@ async function connectDB() {
     await Dossier.collection.createIndex({ marque: 1 });
     await Dossier.collection.createIndex({ statut: 1 });
     await Dossier.collection.createIndex({ dateCreation: -1 });
-    console.log("✅ Indices MongoDB créés");
+    console.log("✅ Indices MongoDB vérifiés/créés");
   } catch (err) {
-    console.error("❌ Erreur de connexion à MongoDB:", err);
+    console.error("❌ Erreur de connexion à MongoDB (Fatal):", err);
     process.exit(1);
   }
 }
@@ -102,9 +118,17 @@ const referencesRouter = require("./routes/references");
 app.use("/api/dossiers", dossiersRouter);
 app.use("/api/references", referencesRouter);
 
-// Health check
+// Health check pour Render
 app.get("/api/health", (req, res) => {
-  res.status(200).json({ status: "OK", timestamp: new Date() });
+  const dbState = mongoose.connection.readyState;
+  // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+  const isHealthy = dbState === 1 || dbState === 2;
+  
+  if (isHealthy) {
+    res.status(200).json({ status: "OK", timestamp: new Date(), dbState });
+  } else {
+    res.status(503).json({ status: "ERROR", message: "Database disconnected", dbState, timestamp: new Date() });
+  }
 });
 
 // ========== SERVIR LE FRONTEND EN PRODUCTION ==========
