@@ -26,5 +26,9 @@
     "ocr"
   ],
   "author": "Holert Fabien",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "pdf-parse": "^2.4.5",
+    "tesseract.js": "^7.0.0"
+  }
 }

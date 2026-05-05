@@ -1,177 +1,171 @@
-const pdf = require("pdf-parse");
+const { createWorker } = require("tesseract.js");
+const pdf = require("pdf-parse"); // A Node.js library to parse PDF content
 
-async function extractDataFromPDF(buffer) {
-  const data = await pdf(buffer);
-  const text = data.text || "";
+// Initialize Tesseract worker (can be reused for performance)
+let worker;
+async function getTesseractWorker() {
+  if (!worker) {
+    // Ensure Tesseract data for French is available.
+    // You might need to configure Tesseract.js to download language data if not present.
+    worker = await createWorker("fra"); // 'fra' for French language
+  }
+  return worker;
+}
 
-  console.log("--- TEXTE EXTRAIT DU PDF (longueur:", text.length, ") ---");
-  console.log(text.substring(0, 500) + "...");
+// Function to extract raw text from PDF (using pdf-parse for digital text, Tesseract for scanned)
+async function extractRawTextFromPDF(buffer) {
+  try {
+    // Try to extract digital text first
+    const data = await pdf(buffer);
+    if (data.text && data.text.trim().length > 20) {
+      console.log("Digital text extracted from PDF.");
+      return data.text;
+    }
+  } catch (digitalErr) {
+    console.warn(
+      "Could not extract digital text, falling back to OCR:",
+      digitalErr.message,
+    );
+    // Continue to OCR if digital extraction fails or is insufficient
+  }
 
+  // Fallback to Tesseract OCR for scanned PDFs
+  console.log("Performing Tesseract OCR on PDF (may take a while)...");
+  const tesseractWorker = await getTesseractWorker();
+  const {
+    data: { text },
+  } = await tesseractWorker.recognize(buffer);
+  return text;
+}
+
+// Function to parse extracted text and extract specific dossier data
+function parseDossierText(text) {
   const result = {};
+  console.log("--- DEBUT DU PARSING DU TEXTE ---");
 
-  // Nettoyage modéré pour garder les slashs des dates et tirets
-  // On garde aussi les points et virgules pour le kilométrage
-  const cleanText = text.replace(/[^A-Z0-9\s\/.,-]/gi, " ");
-  const noSpaceText = text.replace(/\s/g, "");
+  // Basic cleanup: remove double spaces, etc.
+  const cleanText = text.replace(/\s\s+/g, " ");
+  const noSpaceText = text.replace(/\s+/g, ""); // Text without any spaces for long codes
 
-  // 1. OR N° (6 chiffres, généralement commence par 14)
-  const orMatch =
-    cleanText.match(/\b(14\d{4,6})\b/) || cleanText.match(/\b(\d{6,8})\b/);
-  if (orMatch) result.numero = orMatch[1].trim();
+  // VIN (17 chars) - Search in text without spaces as OCR often adds them
+  const vinMatch = noSpaceText.match(/[A-HJ-NPR-Z0-9]{17}/i);
+  if (vinMatch) {
+    result.vin = vinMatch[0].toUpperCase();
+    console.log("VIN trouvé:", result.vin);
+  }
 
-  // 2. Châssis (VIN - 17 caractères, commence par VSS, TMB ou WVW)
-  const vinMatch = noSpaceText.match(/(VSS|TMB|WVW)[A-Z0-9]{14}/i);
-  if (vinMatch) result.vin = vinMatch[0].toUpperCase();
-
-  // 3. Immatriculation & Dates
+  // Immat (AA-123-AA or AA 123 AA or AA123AA)
   const immatMatch =
-    cleanText.match(/\b[A-Z]{2}[-\s]?\d{3}[-\s]?[A-Z]{2}\b/i) ||
-    cleanText.match(/\b\d{3}\s[A-Z]{2,3}\s\d{2}\b/i);
-  if (immatMatch)
+    cleanText.match(/[A-Z]{2}[-\s]?\d{3}[-\s]?[A-Z]{2}/i) ||
+    cleanText.match(/\d{3}\s[A-Z]{2,3}\s\d{2}/i);
+  if (immatMatch) {
     result.immatriculation = immatMatch[0].toUpperCase().replace(/[-\s]/g, "-");
-
-  // Dates (format DD/MM/YYYY)
-  const dateMatches = cleanText.match(/\d{2}\/\d{2}\/\d{4}/g);
-  if (dateMatches && dateMatches.length > 0) {
-    // Souvent la première date est l'impression et la deuxième l'entrée ou inversement selon l'OR
-    result.dateImpression = dateMatches[0];
-    if (dateMatches.length > 1) result.dateEntree = dateMatches[1];
-    else result.dateEntree = dateMatches[0];
+    // Ensure AA-123-AA format
+    if (result.immatriculation.length === 7) {
+      result.immatriculation =
+        result.immatriculation.slice(0, 2) +
+        "-" +
+        result.immatriculation.slice(2, 5) +
+        "-" +
+        result.immatriculation.slice(5);
+    }
+    console.log("Immat trouvée:", result.immatriculation);
   }
 
-  // Recherche spécifique de la date d'entrée si libellée
-  const entryDateMatch = text.match(
-    /(?:entree|entrée|reçu|le)\s*[:\-]?\s*(\d{2}\/\d{2}\/\d{4})/i,
+  // KM
+  const kmMatch =
+    cleanText.match(/(\d{1,7})\s*km/i) ||
+    cleanText.match(/kilométrage\s*:?\s*(\d{1,7})/i);
+  if (kmMatch) {
+    result.kilometrage = parseInt(kmMatch[1]);
+    console.log("KM trouvé:", result.kilometrage);
+  }
+
+  // Lettre Moteur (Ex: CXXB, DADA)
+  const moteurMatch =
+    cleanText.match(/moteur\s*:\s*([A-Z0-9]{3,4})/i) ||
+    cleanText.match(/\b([A-Z]{3,4})\b(?=.*moteur)/i);
+  if (moteurMatch) {
+    result.lettreMoteur = moteurMatch[1].toUpperCase();
+    console.log("Moteur trouvé:", result.lettreMoteur);
+  }
+
+  // Type (Ex: 5G1)
+  const typeMatch =
+    cleanText.match(/type\s*:\s*([A-Z0-9]{3})/i) ||
+    cleanText.match(/type\s+V[HÉE]H\s*:\s*([A-Z0-9]{3})/i);
+  if (typeMatch) {
+    result.typeVehicule = typeMatch[1].toUpperCase();
+    console.log("Type trouvé:", result.typeVehicule);
+  }
+
+  // Date Entree (JJ/MM/AAAA)
+  const dateEntreeMatch = cleanText.match(
+    /(?:date d'entrée|date entrée|date de réception)\s*[:\-\s]*(\d{2}\/\d{2}\/\d{4})/i,
   );
-  if (entryDateMatch) result.dateEntree = entryDateMatch[1];
-
-  // 4. Kilométrage (juste en dessous de KM, souvent manuscrit)
-  const lines = text.split("\n");
-  for (let i = 0; i < lines.length; i++) {
-    const lineLower = lines[i].toLowerCase();
-    // On cherche le mot isolé "km" ou "kilom"
-    if (lineLower.match(/\bkm\b/) || lineLower.includes("kilom")) {
-      // On regarde la ligne suivante (ou la 2e si ligne vide)
-      for (let j = 1; j <= 2; j++) {
-        if (lines[i + j]) {
-          // Retire tous les espaces (ex: "12 000" -> "12000") et corrige les 'o' manuscrits lus au lieu de zéros
-          let lineBelowStripped = lines[i + j]
-            .trim()
-            .replace(/[\s.,]+/g, "")
-            .replace(/[Oo]/g, "0");
-          // Le nombre doit être seul sur la ligne (ou suivi éventuellement de "km")
-          const match = lineBelowStripped.match(/^(\d{1,7})(?:km)?$/i);
-          if (match) {
-            result.kilometrage = parseInt(match[1], 10);
-            break;
-          }
-        }
-      }
-      if (result.kilometrage) break;
-    }
-  }
-  // Fallback
-  if (!result.kilometrage) {
-    const kmMatch =
-      cleanText.replace(/\s/g, "").match(/(\d{1,7})km/i) ||
-      cleanText.match(/(?:kilométrage|km)\s*[:\-]?\s*(\d{1,7})/i);
-    if (kmMatch) result.kilometrage = parseInt(kmMatch[1]);
+  if (dateEntreeMatch) {
+    result.dateEntree = dateEntreeMatch[1];
+    console.log("Date Entrée trouvée:", result.dateEntree);
   }
 
-  // 5. Lettre Moteur et Modèle (modèle juste après la lettre moteur)
-  for (let i = 0; i < lines.length; i++) {
-    const lineLower = lines[i].toLowerCase();
-    if (lineLower.includes("moteur") || lineLower.includes("type/lb")) {
-      // On regarde la ligne courante et les 2 en dessous
-      const searchLines = lines.slice(i, i + 3);
-      for (let j = 0; j < searchLines.length; j++) {
-        const line = searchLines[j];
-        const match = line.match(/\b([A-Z]{3,4})\b/);
-        // Exclure des mots courants
-        if (
-          match &&
-          ![
-            "TMB",
-            "WVW",
-            "VSS",
-            "SEAT",
-            "AUTO",
-            "KIL",
-            "MOT",
-            "LETT",
-            "TYPE",
-          ].includes(match[1].toUpperCase())
-        ) {
-          result.lettreMoteur = match[1].toUpperCase();
-
-          // Le modèle est juste après les lettres moteurs
-          let afterLetters = line
-            .substring(match.index + match[0].length)
-            .trim();
-          afterLetters = afterLetters
-            .replace(/^(?:modèle|model)?\s*[:\/\-]*\s*/i, "")
-            .trim();
-
-          if (afterLetters && afterLetters.length >= 2) {
-            result.modele = afterLetters;
-          } else {
-            // Si vide, on regarde la ligne suivante
-            const nextLine = (searchLines[j + 1] || "").trim();
-            if (nextLine && nextLine.length >= 2) {
-              result.modele = nextLine
-                .replace(/^(?:modèle|model)?\s*[:\/\-]*\s*/i, "")
-                .trim();
-            }
-          }
-          break;
-        }
-      }
-      if (result.lettreMoteur) break;
-    }
+  // Date Impression (JJ/MM/AAAA)
+  const dateImpressionMatch = cleanText.match(
+    /(?:date d'impression|date impression)\s*[:\-\s]*(\d{2}\/\d{2}\/\d{4})/i,
+  );
+  if (dateImpressionMatch) {
+    result.dateImpression = dateImpressionMatch[1];
+    console.log("Date Impression trouvée:", result.dateImpression);
   }
 
-  // 6. Type
-  for (let i = 0; i < lines.length; i++) {
-    const lineLower = lines[i].toLowerCase();
-    if (lineLower.includes("type")) {
-      const typeMatch = lines[i].match(/type\s*[:\-]?\s*([A-Z0-9]{3,6})/i);
-      if (typeMatch) {
-        result.typeVehicule = typeMatch[1].toUpperCase();
-        break;
-      } else {
-        const nextLineMatch = (lines[i + 1] || "").match(/^([A-Z0-9]{3,6})$/i);
-        if (nextLineMatch) {
-          result.typeVehicule = nextLineMatch[1].toUpperCase();
-          break;
-        }
-      }
-    }
+  // Numero OR (Order Repair Number)
+  const numeroORMatch = cleanText.match(
+    /(?:OR N°|OR N|N° OR|Numéro OR)\s*[:\-\s]*([A-Z0-9\-\/]{3,})/i,
+  );
+  if (numeroORMatch) {
+    result.numero = numeroORMatch[1].trim();
+    console.log("Numéro OR trouvé:", result.numero);
   }
 
-  // 7. Marque
-  const marques = ["Volkswagen", "SEAT", "CUPRA", "Skoda"];
-  for (const marque of marques) {
-    if (text.toLowerCase().includes(marque.toLowerCase())) {
-      result.marque = marque;
-      break;
-    }
+  // Marque (Volkswagen, SEAT, CUPRA, Škoda)
+  const marqueMatch = cleanText.match(/(Volkswagen|SEAT|CUPRA|Škoda)/i);
+  if (marqueMatch) {
+    result.marque = marqueMatch[1];
+    console.log("Marque trouvée:", result.marque);
   }
 
-  // 8. DISS (recherche de patterns type DISS-XXXX)
-  const dissMatches = [...text.matchAll(/DISS[\s-]*([A-Z0-9-]+)/gi)];
-  if (dissMatches.length > 0) {
-    result.numDISS = dissMatches.map((m) => m[1].trim().toUpperCase());
+  // DISS (if present, and number)
+  const dissMatch = cleanText.match(
+    /(DISS|D.I.S.S.)\s*[:\-\s]*([A-Z0-9\-\/]+)/i,
+  );
+  if (dissMatch) {
     result.isDISS = true;
+    // Assuming numDISS can be an array of strings
+    result.numDISS = [dissMatch[2].trim()]; // For now, just take the first one found
+    console.log("DISS trouvé:", result.numDISS);
   }
 
-  console.log("--- RESULTAT ANALYSE ---", result);
-  result.lastExtractedText = text; // Utile pour le debug frontend
+  // Description Panne
+  const descriptionPanneMatch = cleanText.match(
+    /(?:description de la panne|description panne|panne)\s*[:\-\s]*(.+?)(?=(?:VIN|Immatriculation|Kilométrage|Date d'entrée|Date impression|Moteur|Type|DISS|OR N°|$))/is,
+  );
+  if (descriptionPanneMatch) {
+    result.descriptionPanne = descriptionPanneMatch[1].trim();
+    console.log("Description Panne trouvée:", result.descriptionPanne);
+  }
+
+  result.lastExtractedText = text; // Keep the raw text for debugging
+
   return result;
 }
 
-async function extractRawTextFromPDF(buffer) {
-  const data = await pdf(buffer);
-  return data.text;
+// Main function for analyze endpoint
+async function extractDataFromPDF(buffer) {
+  const rawText = await extractRawTextFromPDF(buffer);
+  return parseDossierText(rawText);
 }
 
-module.exports = { extractDataFromPDF, extractRawTextFromPDF };
+module.exports = {
+  extractDataFromPDF,
+  extractRawTextFromPDF,
+  parseDossierText, // Export for potential testing or other uses
+};
