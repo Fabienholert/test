@@ -28,23 +28,36 @@ async function extractRawTextFromPDF(buffer) {
       return text;
     }
 
-    console.log("⚠️ Texte numérique trop court, passage à l'OCR...");
+    console.log("⚠️ Texte numérique très court, potentiellement un scan.");
+    
+    // Si c'est un PDF scanné, Tesseract.js ne peut pas lire directement le buffer PDF.
+    // Il faudrait convertir le PDF en image (ex: via pdf2pic ou ghostscript)
+    // Pour l'instant, on évite le crash 502 en ne passant pas le buffer PDF à Tesseract.
+    console.warn("⚠️ Impossible de lire les scans PDF sans conversion en image. Veuillez soumettre un PDF numérique ou une image JPG/PNG.");
+    return text; // Retourne le peu de texte extrait (souvent vide)
+    
   } catch (digitalErr) {
     console.warn("❌ Échec extraction numérique:", digitalErr.message);
+    
+    // Si l'erreur vient d'un vrai fichier image (JPG/PNG) uploadé au lieu d'un PDF,
+    // on peut tenter Tesseract. On vérifie la signature magique du fichier.
+    // Un PDF commence par %PDF (25 50 44 46)
+    const isPDF = buffer.length > 4 && buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46;
+    
+    if (isPDF) {
+      console.error("❌ Le fichier est un PDF invalide ou illisible, et ne peut pas être passé à Tesseract.");
+      return "";
+    }
   }
 
-  // 2. Fallback OCR (Attention: Tesseract.js nécessite une image, pas un PDF)
-  // Si le PDF est un scan, Tesseract.js ne pourra pas le lire directement depuis le buffer PDF.
-  // Pour éviter un crash (502), nous allons essayer de gérer le worker proprement.
+  // 2. Fallback OCR SEULEMENT pour les images (JPG, PNG, etc.)
   let worker = null;
   try {
     console.log(
-      "🚀 Lancement OCR Tesseract (ceci peut être gourmand en RAM)...",
+      "🚀 Lancement OCR Tesseract (Image détectée)...",
     );
     worker = await createWorker("fra");
 
-    // Note: Si 'buffer' est un PDF, recognize() risque d'échouer ou de crash le serveur.
-    // Idéalement, il faudrait convertir le PDF en image ici.
     const {
       data: { text },
     } = await worker.recognize(buffer);
