@@ -80,11 +80,17 @@ function parseDossierText(text) {
   const cleanText = text.replace(/\s\s+/g, " ");
   const noSpaceText = text.replace(/\s+/g, ""); // Text without any spaces for long codes
 
-  // VIN (17 chars) - Search in text without spaces as OCR often adds them
-  const vinMatch = noSpaceText.match(/[A-HJ-NPR-Z0-9]{17}/i);
-  if (vinMatch) {
-    result.vin = vinMatch[0].toUpperCase();
-    console.log("VIN trouvé:", result.vin);
+  // VIN (17 chars) - Search explicitly with FIN: or Châssis:, else fallback
+  const vinMatchWithLabel = cleanText.match(/(?:FIN|Châssis|VIN)\s*[:\-\s]*([A-HJ-NPR-Z0-9\s]{17,25})/i);
+  if (vinMatchWithLabel) {
+    result.vin = vinMatchWithLabel[1].replace(/\s+/g, '').toUpperCase().substring(0, 17);
+    console.log("VIN (label) trouvé:", result.vin);
+  } else {
+    const vinMatch = noSpaceText.match(/[A-HJ-NPR-Z0-9]{17}/i);
+    if (vinMatch) {
+      result.vin = vinMatch[0].toUpperCase();
+      console.log("VIN (fallback) trouvé:", result.vin);
+    }
   }
 
   // Immat (AA-123-AA or AA 123 AA or AA123AA)
@@ -116,20 +122,20 @@ function parseDossierText(text) {
 
   // Lettre Moteur (Ex: CXXB, DADA)
   const moteurMatch =
-    cleanText.match(/moteur\s*:\s*([A-Z0-9]{3,4})/i) ||
+    cleanText.match(/(?:lettre moteur|code moteur|moteur)\s*[:\-\s]*([A-Z0-9]{3,4})/i) ||
     cleanText.match(/\b([A-Z]{3,4})\b(?=.*moteur)/i);
   if (moteurMatch) {
     result.lettreMoteur = moteurMatch[1].toUpperCase();
     console.log("Moteur trouvé:", result.lettreMoteur);
   }
 
-  // Type (Ex: 5G1)
+  // Type (Ex: 5G1) ou Modèle
   const typeMatch =
-    cleanText.match(/type\s*:\s*([A-Z0-9]{3})/i) ||
+    cleanText.match(/(?:type|modèle|modele)\s*[:\-\s]*([A-Z0-9]{3,})/i) ||
     cleanText.match(/type\s+V[HÉE]H\s*:\s*([A-Z0-9]{3})/i);
   if (typeMatch) {
     result.typeVehicule = typeMatch[1].toUpperCase();
-    console.log("Type trouvé:", result.typeVehicule);
+    console.log("Type/Modèle trouvé:", result.typeVehicule);
   }
 
   // Date Entree (JJ/MM/AAAA)
@@ -152,7 +158,7 @@ function parseDossierText(text) {
 
   // Numero OR (Order Repair Number)
   const numeroORMatch = cleanText.match(
-    /(?:OR N°|OR N|N° OR|Numéro OR)\s*[:\-\s]*([A-Z0-9\-\/]{3,})/i,
+    /(?:N° OR DMS|OR N° DMS|OR N°|OR N|N° OR|Numéro OR)\s*[:\-\s]*([A-Z0-9\-\/]{3,})/i,
   );
   if (numeroORMatch) {
     result.numero = numeroORMatch[1].trim();
